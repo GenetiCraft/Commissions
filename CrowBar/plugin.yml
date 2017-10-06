@@ -1,8 +1,9 @@
 name: CrowBar
-author: "jasonwynn10"
+main: jasonwynn10\CrowBar\Main
 version: 0.1.0
+author: "jasonwynn10"
+description: "A plugin which enables items named crowbar to break and drop spawners"
 api:
 - 3.0.0
+- 3.0.0-ALPHA8
 - 3.0.0-ALPHA9
-main: jasonwynn10\CrowBar\Main
-description: "A plugin which enables items named crowbar to break and drop spawners"

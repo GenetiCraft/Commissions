@@ -13,7 +13,8 @@ PowerGainedPerAlly: 0
 TheDefaultPowerEveryFactionStartsWith: 0
 EnableOverClaim: true
 AllyLimitPerFaction: 1
-ClaimWorlds: []
+ClaimWorlds:
+- world
 AllowChat: true
 AllowFactionPvp: false
 AllowAlliedPvp: false
