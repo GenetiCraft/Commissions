@@ -1,0 +1,8 @@
+name: Classes
+author: "jasonwynn10"
+version: 0.1.0
+api:
+- 3.0.0
+- 3.0.0-ALPHA9
+main: jasonwynn10\Classes\Main
+description: "A plugin which gives players certain effects when wearing armor of a single type"

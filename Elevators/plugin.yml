@@ -1,0 +1,9 @@
+name: Elevators
+author: "jasonwynn10"
+version: 0.1.0
+api:
+- 3.0.0
+- 3.0.0-ALPHA8
+- 3.0.0-ALPHA9
+main: jasonwynn10\Elavators\Main
+description: "A plugin which allows players to use signs as elevators to move upwards and downwards"
