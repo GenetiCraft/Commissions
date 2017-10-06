@@ -29,37 +29,38 @@ class Main extends PluginBase implements Listener {
 	public function onTap(PlayerInteractEvent $ev) {
 		$block = $ev->getBlock();
 		if($block instanceof SignPost) {
-			/** @var Sign $tile */
+			/** @var Sign|null $tile */
 			$tile = $block->getLevel()->getTile($block);
-			if(stripos($tile->getLine(0), "elevator") !== false) {
-				$ev->setCancelled();
-				if(stripos($tile->getLine(1), "up") !== false) {
-					for($i = $block->getY() + 1; $i <= Level::Y_MAX; $i++) {
-						$up = $block->getLevel()->getBlock($block->asPosition()->setComponents($block->getX(), $i, $block->getZ()));
-						if($up instanceof SignPost) {
-							/** @var Sign $upTile */
-							$upTile = $block->getLevel()->getTile($up);
-							if(stripos($upTile->getLine(0), "elevator") !== false) {
-								$ev->getPlayer()->teleport($ev->getPlayer()->asPosition()->setComponents($ev->getPlayer()->getX(), $i, $ev->getPlayer()->getZ()));
-								return;
+			if($tile !== null)
+				if(stripos($tile->getLine(0), "elevator") !== false) {
+					$ev->setCancelled();
+					if(stripos($tile->getLine(1), "up") !== false) {
+						for($i = $block->getY() + 1; $i <= Level::Y_MAX; $i++) {
+							$up = $block->getLevel()->getBlock($block->asPosition()->setComponents($block->getX(), $i, $block->getZ()));
+							if($up instanceof SignPost) {
+								/** @var Sign $upTile */
+								$upTile = $block->getLevel()->getTile($up);
+								if(stripos($upTile->getLine(0), "elevator") !== false) {
+									$ev->getPlayer()->teleport($ev->getPlayer()->asPosition()->setComponents($ev->getPlayer()->getX(), $i, $ev->getPlayer()->getZ()));
+									return;
+								}
+							}
+						}
+					}elseif(stripos($tile->getLine(1), "down") !== false) {
+						for($i = $block->getY() - 1; $i >= 0; $i--) {
+							$down = $block->getLevel()->getBlock($block->asPosition()->setComponents($block->getX(), $i, $block->getZ()));
+							if($down instanceof SignPost) {
+								/** @var Sign $upTile */
+								$upTile = $block->getLevel()->getTile($down);
+								if(stripos($upTile->getLine(0), "elevator") !== false) {
+									$ev->getPlayer()->teleport($ev->getPlayer()->asPosition()->setComponents($ev->getPlayer()->getX(), $i, $ev->getPlayer()->getZ()));
+									return;
+								}
 							}
 						}
 					}
-				}elseif(stripos($tile->getLine(1), "down") !== false) {
-					for($i = $block->getY() - 1; $i >= 0; $i--) {
-						$down = $block->getLevel()->getBlock($block->asPosition()->setComponents($block->getX(), $i, $block->getZ()));
-						if($down instanceof SignPost) {
-							/** @var Sign $upTile */
-							$upTile = $block->getLevel()->getTile($down);
-							if(stripos($upTile->getLine(0), "elevator") !== false) {
-								$ev->getPlayer()->teleport($ev->getPlayer()->asPosition()->setComponents($ev->getPlayer()->getX(), $i, $ev->getPlayer()->getZ()));
-								return;
-							}
-						}
-					}
+					$this->getLogger()->error("No matching elevator sign found");
 				}
-				$this->getLogger()->error("No matching elevator sign found");
-			}
 		}
 	}
 }
