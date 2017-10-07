@@ -8,6 +8,7 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\level\Level;
 use pocketmine\plugin\PluginBase;
 use pocketmine\tile\Sign;
+use pocketmine\utils\TextFormat;
 
 class Main extends PluginBase implements Listener {
 	public function onEnable() {
@@ -17,11 +18,9 @@ class Main extends PluginBase implements Listener {
 	public function onSignCreation(SignChangeEvent $ev) {
 		if(stripos($ev->getLine(0), "elevator") !== false) {
 			if(stripos($ev->getLine(1), "up") !== false) {
-				$ev->getPlayer()->sendMessage("Elevator Sign Created!");
+				$ev->getPlayer()->sendMessage(TextFormat::YELLOW."Elevator Sign Created!");
 			}elseif(stripos($ev->getLine(1), "down") !== false) {
-				$ev->getPlayer()->sendMessage("Elevator Sign Created!");
-			}else{
-				$ev->getPlayer()->sendMessage("Elevator Sign Invalid!");
+				$ev->getPlayer()->sendMessage(TextFormat::YELLOW."Elevator Sign Created!");
 			}
 		}
 	}
@@ -57,6 +56,9 @@ class Main extends PluginBase implements Listener {
 							}
 						}
 					}
+				}else{
+					$ev->getPlayer()->sendMessage(TextFormat::RED."This elevator sign is invalid!");
+					return;
 				}
 				$this->getLogger()->error("No matching elevator sign found");
 			}
