@@ -1,5 +1,5 @@
 name: Elevators
-main: jasonwynn10\Elavators\Main
+main: jasonwynn10\Elevators\Main
 version: 0.1.0
 author: "jasonwynn10"
 description: "A plugin which adds Elevators to the game via signs"
