@@ -22,7 +22,13 @@ class Main extends PluginBase implements Listener {
 			"Spirit" => [
 				"stick 2 {display:{Name:\"§r§6§lNormal stick\"}}",
 				"diamond_sword 1",
-				"wool:4 3"
+				"wool:4 3",
+				"tripwire_hook 3 {display:{Name:\"Psycho\"}}",
+				"tripwire_hook 4 {display:{Name:\"Paranormal\"}}",
+				"tripwire_hook 2 {display:{Name:\"Reaper\"}}",
+				"tripwire_hook 1 {display:{Name:\"DemonLord\"}}",
+				"wool:5 7 {display:{Name:\"mystical wool\"}}",
+				"4:1 2"
 			],
 			"Paranormal" => ["stick 1 {ench:[{id:12s,lvl:10s}]}"],
 			"Psycho" => ["stick 1 {display:{Name:\"§eTHE POWER\"},ench:[{id:12s,lvl:50s}]}"],
@@ -64,11 +70,7 @@ class Main extends PluginBase implements Listener {
 			}
 			$items[] = $item;
 		}
-		$randomised = [];
-		foreach(array_rand($items, count($items) - 1) as $key) { // randomize items
-			$slot = mt_rand(0, 27);
-			$randomised[$slot] = $items[$key]; // randomize slots they are located
-		}
+		$randomised[10] = $items[array_rand($items)]; // randomize item given
 		return $randomised;
 	}
 	public function onPlace(BlockPlaceEvent $event) {
