@@ -103,9 +103,15 @@ class Main extends PluginBase implements Listener {
 			$i = 0;
 			foreach($inventory->getContents() as $item) {
 				if($item->getId() === Item::TRIPWIRE_HOOK and $item->getName() === $chestTile->getName()) {
-					$inventory->setItem($i, $item->pop(), true);
+					/** @var Item $newItem */
+					$newItem = $item->setCount($item->getCount() - 1);
+					if($newItem->isNull()) {
+						$inventory->clear($i, true);
+					}
+					$inventory->setItem($i, $newItem, true);
 					return;
 				}
+				$i++;
 			}
 		}
 	}
