@@ -1,10 +1,9 @@
 <?php
 namespace jasonwynn10\Crates;
 
-use pocketmine\block\Block;
 use pocketmine\block\Chest;
 use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\inventory\InventoryCloseEvent;
+use pocketmine\event\inventory\InventoryOpenEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
@@ -58,7 +57,7 @@ class Main extends PluginBase implements Listener {
 			/** @var \pocketmine\tile\Chest|null $chestTile */
 			$chestTile = $block->getLevel()->getTile($block);
 			if($chestTile !== null and in_array($chestTile->getName(), $this->getConfig()->getAll(true))) {
-				if($hand->getId() !== Block::TRIPWIRE_HOOK) {
+				if($hand->getId() !== Item::TRIPWIRE_HOOK) {
 					$chestTile->getInventory()->clearAll();
 					$ev->setCancelled();
 					return;
@@ -88,14 +87,21 @@ class Main extends PluginBase implements Listener {
 					}
 					$items[] = $item;
 				}
-				$chestTile->getInventory()->setContents($items, true);
+				$chestTile->getInventory()->setContents($items, false);
 			}
 		}
 	}
-	public function onInventoryClose(InventoryCloseEvent $ev) {
+	public function onInventoryOpen(InventoryOpenEvent $ev) {
 		$chestTile = $ev->getInventory()->getHolder();
 		if($chestTile instanceof \pocketmine\tile\Chest and in_array($chestTile->getName(), $this->getConfig()->getAll(true))) {
-			$ev->getPlayer()->getInventory()->getItemInHand()->pop(); // TODO: find a better method because this creates a vulnerability to keep the crate key
+			$inventory = $ev->getPlayer()->getInventory();
+			foreach($inventory->getContents() as $item) {
+				if($item->getId() === Item::TRIPWIRE_HOOK and $item->getName() === $chestTile->getName()) {
+					$item->pop();
+					$inventory->sendHeldItem([$ev->getPlayer()]); // The client needs to know it doesn't have the item anymore
+					return;
+				}
+			}
 		}
 	}
 }
