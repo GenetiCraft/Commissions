@@ -374,10 +374,10 @@ class FactionCommands implements CommandExecutor {
 			            return true;
 		            }
 		            if ($this->plugin->getFactionPower($faction) < $this->plugin->prefs->get("PowerNeededToClaimAPlot")) {
-			            $needed_power = $this->plugin->prefs->get("PowerNeededToClaimAPlot");
-			            $faction_power = $this->plugin->getFactionPower($faction);
-			            $sender->sendMessage($this->plugin->formatMessage("Your faction doesn't have enough power to claim a land."));
-			            $sender->sendMessage($this->plugin->formatMessage("$needed_power power is required but your faction has only $faction_power power."));
+			            $needed_DTR = $this->plugin->prefs->get("PowerNeededToClaimAPlot");
+			            $faction_DTR = $this->plugin->getFactionPower($faction);
+			            $sender->sendMessage($this->plugin->formatMessage("Your faction doesn't have enough DTR to claim a land."));
+			            $sender->sendMessage($this->plugin->formatMessage("$needed_DTR DTR is required but your faction has only $faction_DTR DTR."));
 			            return true;
 		            }
 		            $x = floor($sender->getX());
@@ -398,8 +398,8 @@ class FactionCommands implements CommandExecutor {
                         }
 
                         $fac = $this->plugin->factionFromPoint($x, $z);
-                        $power = $this->plugin->getFactionPower($fac);
-                        $sender->sendMessage($this->plugin->formatMessage("This plot is claimed by $fac with $power power"));
+                        $DTR = $this->plugin->getFactionPower($fac);
+                        $sender->sendMessage($this->plugin->formatMessage("This plot is claimed by $fac with $DTR DTR"));
                     }
 	            if (strtolower($args[0]) == 'topfactions') {
                         $this->plugin->sendListOfTop10FactionsTo($sender);
@@ -426,9 +426,9 @@ class FactionCommands implements CommandExecutor {
                         $this->plugin->db->query("DELETE FROM home WHERE faction='$args[1]';");
                         $sender->sendMessage($this->plugin->formatMessage("Unwanted faction was successfully deleted and their faction plot was unclaimed!", true));
                     }
-	            if (strtolower($args[0]) == 'addstrto' or strtolower($args[0]) == 'faddpower') {
+	            if (strtolower($args[0]) == 'addstrto' or strtolower($args[0]) == 'faddDTR') {
 		            if (!isset($args[1]) or ! isset($args[2])) {
-			            $sender->sendMessage($this->plugin->formatMessage("Usage: /f addpower <faction> <power>"));
+			            $sender->sendMessage($this->plugin->formatMessage("Usage: /f addDTR <faction> <DTR>"));
 			            return true;
 		            }
 		            if (!$this->plugin->factionExists($args[1])) {
@@ -440,28 +440,28 @@ class FactionCommands implements CommandExecutor {
 			            return true;
 		            }
 		            $this->plugin->addFactionPower($args[1], $args[2]);
-		            $sender->sendMessage($this->plugin->formatMessage("Successfully added $args[2] power to $args[1]", true));
+		            $sender->sendMessage($this->plugin->formatMessage("Successfully added $args[2] DTR to $args[1]", true));
 	            }
-	            if (strtolower($args[0]) == 'power') {
+	            if (strtolower($args[0]) == 'DTR') {
 		            if(!$this->plugin->isInFaction($sender->getName())) {
 			            $sender->sendMessage($this->plugin->formatMessage("§6- §cYou must be in a faction to do this"));
 			            return true;
 		            }
-		            $faction_power = $this->plugin->getFactionPower($this->plugin->getPlayerFaction($sender->getName()));
+		            $faction_DTR = $this->plugin->getFactionPower($this->plugin->getPlayerFaction($sender->getName()));
 
-		            $sender->sendMessage($this->plugin->formatMessage("§6- §3Your faction has§b $faction_power §3power",true));
+		            $sender->sendMessage($this->plugin->formatMessage("§6- §3Your faction has§b $faction_DTR §3DTR",true));
 	            }
-	            if (strtolower($args[0]) == 'seepower') {
+	            if (strtolower($args[0]) == 'seeDTR') {
 		            if(!isset($args[1])) {
-			            $sender->sendMessage($this->plugin->formatMessage("§6- §3Usage: /f seepower <faction>"));
+			            $sender->sendMessage($this->plugin->formatMessage("§6- §3Usage: /f seeDTR <faction>"));
 			            return true;
 		            }
 		            if(!$this->plugin->factionExists($args[1])) {
 			            $sender->sendMessage($this->plugin->formatMessage("§6- §cFaction does not exist"));
 			            return true;
 		            }
-		            $faction_power = $this->plugin->getFactionPower($args[1]);
-		            $sender->sendMessage($this->plugin->formatMessage("§6-§e $args[1] §3has $faction_power power.",true));
+		            $faction_DTR = $this->plugin->getFactionPower($args[1]);
+		            $sender->sendMessage($this->plugin->formatMessage("§6-§e $args[1] §3has $faction_DTR DTR.",true));
 	            }
 	            if (strtolower($args[0]) == 'pf') {
                         if (!isset($args[1])) {
@@ -494,10 +494,10 @@ class FactionCommands implements CommandExecutor {
                             return true;
                         }
                         if ($this->plugin->getFactionPower($faction) < $this->plugin->prefs->get("PowerNeededToClaimAPlot")) {
-                            $needed_power = $this->plugin->prefs->get("PowerNeededToClaimAPlot");
-                            $faction_power = $this->plugin->getFactionPower($faction);
-                            $sender->sendMessage($this->plugin->formatMessage("Your faction doesn't have enough power to claim a land."));
-                            $sender->sendMessage($this->plugin->formatMessage("$needed_power power is required but your faction has only $faction_power power."));
+                            $needed_DTR = $this->plugin->prefs->get("PowerNeededToClaimAPlot");
+                            $faction_DTR = $this->plugin->getFactionPower($faction);
+                            $sender->sendMessage($this->plugin->formatMessage("Your faction doesn't have enough DTR to claim a land."));
+                            $sender->sendMessage($this->plugin->formatMessage("$needed_DTR DTR is required but your faction has only $faction_DTR DTR."));
                             return true;
                         }
                         $sender->sendMessage($this->plugin->formatMessage("Getting your coordinates...", true));
@@ -506,15 +506,15 @@ class FactionCommands implements CommandExecutor {
                         if ($this->plugin->prefs->get("EnableOverClaim")) {
                             if ($this->plugin->isInPlot($sender)) {
                                 $faction_victim = $this->plugin->factionFromPoint($x, $z);
-                                $faction_victim_power = $this->plugin->getFactionPower($faction_victim);
+                                $faction_victim_DTR = $this->plugin->getFactionPower($faction_victim);
                                 $faction_ours = $this->plugin->getPlayerFaction($playerName);
-                                $faction_ours_power = $this->plugin->getFactionPower($faction_ours);
+                                $faction_ours_DTR = $this->plugin->getFactionPower($faction_ours);
                                 if ($this->plugin->inOwnPlot($sender)) {
                                     $sender->sendMessage($this->plugin->formatMessage("You can't overclaim your own plot."));
                                     return true;
                                 } else {
-                                    if ($faction_ours_power < $faction_victim_power) {
-                                        $sender->sendMessage($this->plugin->formatMessage("You can't overclaim the plot of $faction_victim because your power is lower than theirs."));
+                                    if ($faction_ours_DTR < $faction_victim_DTR) {
+                                        $sender->sendMessage($this->plugin->formatMessage("You can't overclaim the plot of $faction_victim because your DTR is lower than theirs."));
                                         return true;
                                     } else {
                                         $this->plugin->db->query("DELETE FROM plots WHERE faction='$faction_ours';");
@@ -1056,7 +1056,7 @@ class FactionCommands implements CommandExecutor {
                         $faction = $args[1];
                         $result = $this->plugin->db->query("SELECT * FROM motd WHERE faction='$faction';");
                         $array = $result->fetchArray(SQLITE3_ASSOC);
-                        $power = $this->plugin->getFactionPower($faction);
+                        $DTR = $this->plugin->getFactionPower($faction);
                         $message = $array["message"];
                         $leader = $this->plugin->getLeader($faction);
                         $numPlayers = $this->plugin->getNumberOfPlayers($faction);
@@ -1064,7 +1064,7 @@ class FactionCommands implements CommandExecutor {
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|[Faction]| : " . TextFormat::GREEN . "$faction" . TextFormat::RESET);
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|(Leader)| : " . TextFormat::YELLOW . "$leader" . TextFormat::RESET);
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|^Players^| : " . TextFormat::LIGHT_PURPLE . "$numPlayers" . TextFormat::RESET);
-                        $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|&Strength&| : " . TextFormat::RED . "$power" . " power" . TextFormat::RESET);
+                        $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|&Strength&| : " . TextFormat::RED . "$DTR" . " DTR" . TextFormat::RESET);
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|*Description*| : " . TextFormat::AQUA . TextFormat::UNDERLINE . "$message" . TextFormat::RESET);
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "-------INFORMATION-------" . TextFormat::RESET);} else {
                         if (!$this->plugin->isInFaction($playerName)) {
@@ -1074,7 +1074,7 @@ class FactionCommands implements CommandExecutor {
                         $faction = $this->plugin->getPlayerFaction(($sender->getName()));
                         $result = $this->plugin->db->query("SELECT * FROM motd WHERE faction='$faction';");
                         $array = $result->fetchArray(SQLITE3_ASSOC);
-                        $power = $this->plugin->getFactionPower($faction);
+                        $DTR = $this->plugin->getFactionPower($faction);
                         $message = $array["message"];
                         $leader = $this->plugin->getLeader($faction);
                         $numPlayers = $this->plugin->getNumberOfPlayers($faction);
@@ -1082,7 +1082,7 @@ class FactionCommands implements CommandExecutor {
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|[Faction]| : " . TextFormat::GREEN . "$faction" . TextFormat::RESET);
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|(Leader)| : " . TextFormat::YELLOW . "$leader" . TextFormat::RESET);
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|^Players^| : " . TextFormat::LIGHT_PURPLE . "$numPlayers" . TextFormat::RESET);
-                        $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|&Strength&| : " . TextFormat::RED . "$power" . " power" . TextFormat::RESET);
+                        $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|&Strength&| : " . TextFormat::RED . "$DTR" . " DTR" . TextFormat::RESET);
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "|*Description*| : " . TextFormat::AQUA . TextFormat::UNDERLINE . "$message" . TextFormat::RESET);
                         $sender->sendMessage(TextFormat::GOLD . TextFormat::ITALIC . "-------INFORMATION-------" . TextFormat::RESET);
                     }
