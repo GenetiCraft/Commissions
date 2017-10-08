@@ -5,7 +5,6 @@ use pocketmine\block\Chest;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\inventory\InventoryOpenEvent;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\nbt\JsonNBTParser;
@@ -33,9 +32,50 @@ class Main extends PluginBase implements Listener {
 		$this->getConfig()->reload();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
+
+	/**
+	 * @param string $crate
+	 *
+	 * @return Item[]
+	 */
+	public function getRandomItems(string $crate) : array {
+		$items = [];
+		foreach($this->getConfig()->get($crate, []) as $itemString) {
+			$arr = explode(" ", $itemString);
+			$item = Item::fromString($arr[0]);
+			if(!isset($arr[1])) {
+				$item->setCount($item->getMaxStackSize());
+			}else{
+				$item->setCount((int) $arr[1]);
+			}
+			if(isset($arr[2])) {
+				$tags = $exception = null;
+				$data = implode(" ", array_slice($arr, 2));
+				try{
+					$tags = JsonNBTParser::parseJSON($data);
+				}catch(\Throwable $ex) {
+					$exception = $ex;
+				}
+				if(!$tags instanceof CompoundTag or $exception !== null) {
+					$this->getLogger()->error("Invalid NBT tag!");
+					continue;
+				}
+				$item->setNamedTag($tags);
+			}
+			$items[] = $item;
+		}
+		$randomised = [];
+		foreach(array_rand($items, count($items) - 1) as $key) { // randomize items
+			$slot = mt_rand(0, 27);
+			$randomised[$slot] = $items[$key]; // randomize slots they are located
+		}
+		return $randomised;
+	}
 	public function onPlace(BlockPlaceEvent $event) {
 		if($event->getBlock() instanceof Chest) {
 			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $event->getBlock()->asPosition()) extends PluginTask{
+				/** @var Position $coords */
+				private $coords;
 				public function __construct(Plugin $owner, Position $coords) {
 					parent::__construct($owner);
 					$this->coords = $coords;
@@ -50,68 +90,24 @@ class Main extends PluginBase implements Listener {
 			}, 1); // 1 tick delay
 		}
 	}
-	public function onTap(PlayerInteractEvent $ev) {
-		$block = $ev->getBlock();
-		$hand = $ev->getItem();
-		if($block instanceof Chest) {
-			/** @var \pocketmine\tile\Chest|null $chestTile */
-			$chestTile = $block->getLevel()->getTile($block);
-			if($chestTile !== null and in_array($chestTile->getName(), $this->getConfig()->getAll(true))) {
-				if($hand->getId() !== Item::TRIPWIRE_HOOK) {
-					$chestTile->getInventory()->clearAll();
-					$ev->setCancelled();
-					return;
-				}
-				$items = [];
-				foreach($this->getConfig()->get($chestTile->getName(), []) as $itemString) {
-					$arr = explode(" ", $itemString);
-					$item = Item::fromString($arr[0]);
-					if(!isset($arr[1])) {
-						$item->setCount($item->getMaxStackSize());
-					}else{
-						$item->setCount((int) $arr[1]);
-					}
-					if(isset($arr[2])) {
-						$tags = $exception = null;
-						$data = implode(" ", array_slice($arr, 2));
-						try{
-							$tags = JsonNBTParser::parseJSON($data);
-						}catch(\Throwable $ex) {
-							$exception = $ex;
-						}
-						if(!$tags instanceof CompoundTag or $exception !== null) {
-							$this->getLogger()->error("Invalid NBT tag!");
-							return;
-						}
-						$item->setNamedTag($tags);
-					}
-					$items[] = $item;
-				}
-				$randomised = [];
-				foreach(array_rand($items, count($items) - 1) as $key) { // randomize items
-					$slot = mt_rand(0, $chestTile->getInventory()->getSize());
-					$randomised[$slot] = $items[$key]; // randomize slots they are located
-				}
-				$chestTile->getInventory()->setContents($randomised, true);
-			}
-		}
-	}
 	public function onInventoryOpen(InventoryOpenEvent $ev) {
 		$chestTile = $ev->getInventory()->getHolder();
 		if($chestTile instanceof \pocketmine\tile\Chest and in_array($chestTile->getName(), $this->getConfig()->getAll(true))) {
 			$inventory = $ev->getPlayer()->getInventory();
-			$i = 0;
-			foreach($inventory->getContents() as $item) {
-				if($item->getId() === Item::TRIPWIRE_HOOK and $item->getName() === $chestTile->getName()) {
-					/** @var Item $newItem */
-					$newItem = $item->setCount($item->getCount() - 1);
-					if($newItem->isNull()) {
-						$inventory->clear($i, true);
-					}
-					$inventory->setItem($i, $newItem, true);
+			$item = $inventory->getItemInHand();
+			if($item->getId() === Item::TRIPWIRE_HOOK and $item->getName() === $chestTile->getName()) {
+				$chest = $chestTile->getInventory();
+				if(count($chest->getViewers()) > 0) {
+					$ev->setCancelled();
+					$ev->getPlayer()->sendMessage("This Crate is already in use!");
 					return;
 				}
-				$i++;
+				$items = $this->getRandomItems($chestTile->getName());
+				$ev->getInventory()->setContents($items);
+				$item->pop();
+				$inventory->setItem($inventory->getHeldItemIndex(), $item);
+			}else{
+				$ev->setCancelled();
 			}
 		}
 	}
