@@ -87,7 +87,12 @@ class Main extends PluginBase implements Listener {
 					}
 					$items[] = $item;
 				}
-				$chestTile->getInventory()->setContents($items, false);
+				$randomised = [];
+				foreach(array_rand($items, count($items) - 1) as $key) { // randomize items
+					$slot = mt_rand(0, $chestTile->getInventory()->getSize());
+					$randomised[$slot] = $items[$key]; // randomize slots they are located
+				}
+				$chestTile->getInventory()->setContents($randomised, true);
 			}
 		}
 	}
@@ -95,10 +100,10 @@ class Main extends PluginBase implements Listener {
 		$chestTile = $ev->getInventory()->getHolder();
 		if($chestTile instanceof \pocketmine\tile\Chest and in_array($chestTile->getName(), $this->getConfig()->getAll(true))) {
 			$inventory = $ev->getPlayer()->getInventory();
+			$i = 0;
 			foreach($inventory->getContents() as $item) {
 				if($item->getId() === Item::TRIPWIRE_HOOK and $item->getName() === $chestTile->getName()) {
-					$item->pop();
-					$inventory->sendHeldItem([$ev->getPlayer()]); // The client needs to know it doesn't have the item anymore
+					$inventory->setItem($i, $item->pop(), true);
 					return;
 				}
 			}
