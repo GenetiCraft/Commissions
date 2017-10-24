@@ -213,6 +213,7 @@ class FactionMain extends PluginBase implements Listener {
 	public function addFactionPower($faction, $DTR) {
 		if ($this->getFactionPower($faction) + $DTR < 0) {
 			$DTR = $this->getFactionPower($faction);
+			$this->db->query("DELETE FROM plots WHERE faction='$faction';");
 		}
 		$stmt = $this->db->prepare("INSERT OR REPLACE INTO strength (faction, DTR) VALUES (:faction, :DTR);");
 		$stmt->bindValue(":faction", $faction);
@@ -223,6 +224,7 @@ class FactionMain extends PluginBase implements Listener {
 	public function subtractFactionPower($faction, $DTR) {
 		if ($this->getFactionPower($faction) - $DTR < 0) {
 			$DTR = $this->getFactionPower($faction);
+			$this->db->query("DELETE FROM plots WHERE faction='$faction';");
 		}
 		$stmt = $this->db->prepare("INSERT OR REPLACE INTO strength (faction, DTR) VALUES (:faction, :DTR);");
 		$stmt->bindValue(":faction", $faction);

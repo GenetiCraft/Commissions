@@ -39,7 +39,7 @@ class Main extends PluginBase implements Listener {
 							/** @var Sign|null $upTile */
 							$upTile = $block->getLevel()->getTile($up);
 							if($upTile !== null and stripos($upTile->getLine(0), "elevator") !== false) {
-								$ev->getPlayer()->teleport($ev->getPlayer()->asPosition()->setComponents($ev->getPlayer()->getX(), $i, $ev->getPlayer()->getZ()));
+								$ev->getPlayer()->teleport($ev->getPlayer()->asPosition()->setComponents($up->getX(), $up->getY(), $up->getZ()));
 								return;
 							}
 						}
@@ -51,7 +51,7 @@ class Main extends PluginBase implements Listener {
 							/** @var Sign|null $downTile */
 							$downTile = $block->getLevel()->getTile($down);
 							if($downTile !== null and stripos($downTile->getLine(0), "elevator") !== false) {
-								$ev->getPlayer()->teleport($ev->getPlayer()->asPosition()->setComponents($ev->getPlayer()->getX(), $i, $ev->getPlayer()->getZ()));
+								$ev->getPlayer()->teleport($ev->getPlayer()->asPosition()->setComponents($down->getX(), $down->getY(), $down->getZ()));
 								return;
 							}
 						}
