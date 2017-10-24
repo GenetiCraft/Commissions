@@ -97,7 +97,7 @@ class Main extends PluginBase implements Listener {
 		if($chestTile instanceof \pocketmine\tile\Chest and in_array($chestTile->getName(), $this->getConfig()->getAll(true))) {
 			$inventory = $ev->getPlayer()->getInventory();
 			$item = $inventory->getItemInHand();
-			if($item->getId() === Item::TRIPWIRE_HOOK and $item->getName() === $chestTile->getName()) {
+			if($item->getId() === Item::TRIPWIRE_HOOK) {
 				$chest = $chestTile->getInventory();
 				if(count($chest->getViewers()) > 0) {
 					$ev->setCancelled();

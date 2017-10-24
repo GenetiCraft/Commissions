@@ -4,6 +4,7 @@ namespace jasonwynn10\Classes;
 use pocketmine\entity\Effect;
 use pocketmine\event\entity\EntityArmorChangeEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
@@ -18,11 +19,11 @@ class Main extends PluginBase implements Listener {
 		$entity = $ev->getEntity();
 		if($entity instanceof Player) {
 			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $entity->getName()) extends PluginTask {
+				private $player;
 				public function __construct(Plugin $owner, string $player) {
 					parent::__construct($owner);
 					$this->player = $player;
 				}
-
 				public function onRun(int $currentTick) {
 					/** @var Player|null $entity */
 					$entity = $this->getOwner()->getServer()->getPlayer($this->player);
@@ -76,6 +77,27 @@ class Main extends PluginBase implements Listener {
 					}
 				}
 			}, 5); // check armor types after transaction completed
+		}
+	}
+	public function onTap(PlayerInteractEvent $event) {
+		//TODO: tap cooldown
+		if($event->getItem()->getId() === Item::GHAST_TEAR) {
+			//Regen 1 for 5 secs
+		}
+		if($event->getItem()->getId() === Item::MAGMA_CREAM) {
+			//Fire resistance 1 for 5 secs
+		}
+		if($event->getItem()->getId() === Item::SUGAR) {
+			//speed 2 for 5 secs
+		}
+		if($event->getItem()->getId() === Item::GOLDEN_CARROT) {
+			//night vision for 5 secs
+		}
+		if($event->getItem()->getId() === Item::BLAZE_ROD) {
+			//strength 1 for 5 secs
+		}
+		if($event->getItem()->getId() === Item::FEATHER) {
+			//jump 2 for 5 secs
 		}
 	}
 }
