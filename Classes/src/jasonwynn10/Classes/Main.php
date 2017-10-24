@@ -83,22 +83,22 @@ class Main extends PluginBase implements Listener {
 	}
 	public function onTap(PlayerInteractEvent $event) {
 		$name = $event->getPlayer()->getName();
-		if(!isset($this->timeout[$name]) or $this->timeout[$name]->getTimestamp() >= (new \DateTime())->getTimestamp()) {
-			$expiration = new \DateTime();
-			$expiration->add(new \DateInterval('PT30S'));
+		$expiration = new \DateTime();
+		if(!isset($this->timeout[$name]) or $this->timeout[$name]->getTimestamp() >= $expiration->getTimestamp()) {
+			$expiration->add(new \DateInterval('PT30S')); // add 30 secs to timeout
 			$this->timeout[$name] = $expiration;
 			if($event->getItem()->getId() === Item::GHAST_TEAR) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::REGENERATION)->setDuration(100));//Regen 1 for 5 secs
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::REGENERATION)->setDuration(100)); //Regen 1 for 5 secs
 			}elseif($event->getItem()->getId() === Item::MAGMA_CREAM) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::FIRE_RESISTANCE)->setDuration(100));//Fire resistance 1 for 5 secs
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::FIRE_RESISTANCE)->setDuration(100)); //Fire resistance 1 for 5 secs
 			}elseif($event->getItem()->getId() === Item::SUGAR) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::SPEED)->setDuration(100));//speed 2 for 5 secs
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::SPEED)->setDuration(100)); //speed 2 for 5 secs
 			}elseif($event->getItem()->getId() === Item::GOLDEN_CARROT) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::NIGHT_VISION)->setDuration(100));//night vision 1 for 5 secs
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::NIGHT_VISION)->setDuration(100)); //night vision 1 for 5 secs
 			}elseif($event->getItem()->getId() === Item::BLAZE_ROD) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::STRENGTH)->setDuration(100));//strength 1 for 5 secs
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::STRENGTH)->setDuration(100)); //strength 1 for 5 secs
 			}elseif($event->getItem()->getId() === Item::FEATHER) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::REGENERATION)->setAmplifier(1)->setDuration(100));//jump 2 for 5 secs
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::JUMP)->setAmplifier(1)->setDuration(100)); //jump 2 for 5 secs
 			}
 		}
 	}
