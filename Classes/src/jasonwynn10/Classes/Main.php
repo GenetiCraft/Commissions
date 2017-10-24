@@ -12,6 +12,8 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\PluginTask;
 
 class Main extends PluginBase implements Listener {
+	/** @var \DateTime[] $timeout */
+	private $timeout = [];
 	public function onEnable() {
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
@@ -80,24 +82,24 @@ class Main extends PluginBase implements Listener {
 		}
 	}
 	public function onTap(PlayerInteractEvent $event) {
-		//TODO: tap cooldown
-		if($event->getItem()->getId() === Item::GHAST_TEAR) {
-			//Regen 1 for 5 secs
-		}
-		if($event->getItem()->getId() === Item::MAGMA_CREAM) {
-			//Fire resistance 1 for 5 secs
-		}
-		if($event->getItem()->getId() === Item::SUGAR) {
-			//speed 2 for 5 secs
-		}
-		if($event->getItem()->getId() === Item::GOLDEN_CARROT) {
-			//night vision for 5 secs
-		}
-		if($event->getItem()->getId() === Item::BLAZE_ROD) {
-			//strength 1 for 5 secs
-		}
-		if($event->getItem()->getId() === Item::FEATHER) {
-			//jump 2 for 5 secs
+		$name = $event->getPlayer()->getName();
+		if(!isset($this->timeout[$name]) or $this->timeout[$name]->getTimestamp() >= (new \DateTime())->getTimestamp()) {
+			$expiration = new \DateTime();
+			$expiration->add(new \DateInterval('PT30S'));
+			$this->timeout[$name] = $expiration;
+			if($event->getItem()->getId() === Item::GHAST_TEAR) {
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::REGENERATION)->setDuration(100));//Regen 1 for 5 secs
+			}elseif($event->getItem()->getId() === Item::MAGMA_CREAM) {
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::FIRE_RESISTANCE)->setDuration(100));//Fire resistance 1 for 5 secs
+			}elseif($event->getItem()->getId() === Item::SUGAR) {
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::SPEED)->setDuration(100));//speed 2 for 5 secs
+			}elseif($event->getItem()->getId() === Item::GOLDEN_CARROT) {
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::NIGHT_VISION)->setDuration(100));//night vision 1 for 5 secs
+			}elseif($event->getItem()->getId() === Item::BLAZE_ROD) {
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::STRENGTH)->setDuration(100));//strength 1 for 5 secs
+			}elseif($event->getItem()->getId() === Item::FEATHER) {
+				$event->getPlayer()->addEffect(Effect::getEffect(Effect::REGENERATION)->setAmplifier(1)->setDuration(100));//jump 2 for 5 secs
+			}
 		}
 	}
 }
