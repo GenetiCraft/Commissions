@@ -2,20 +2,16 @@
 
 namespace FactionsPro;
 
-use pocketmine\block\Block;
-use pocketmine\entity\Effect;
-use pocketmine\event\entity\EntityArmorChangeEvent;
-use pocketmine\event\Listener;
 use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\player\PlayerChatEvent;
-use pocketmine\item\Item;
-use pocketmine\Player;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\utils\TextFormat;
-use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 
 class FactionListener implements Listener {
 	
@@ -151,9 +147,9 @@ class FactionListener implements Listener {
                 $e = $this->plugin->prefs->get("PowerGainedPerKillingAnEnemy");
                 if($ent->getLastDamageCause() instanceof EntityDamageByEntityEvent && $ent->getLastDamageCause()->getDamager() instanceof Player and $this->plugin->getFactionPower($f) > 0){
                     if($this->plugin->isInFaction($ent->getLastDamageCause()->getDamager()->getName())){
-                        $this->plugin->subtractFactionPower($f,$e*2);
+                        $this->plugin->subtractFactionPower($f, $e * 2);
                     } else {
-                        $this->plugin->subtractFactionPower($f,$e);
+                        $this->plugin->subtractFactionPower($f, $e);
                     }
                 }
             }
