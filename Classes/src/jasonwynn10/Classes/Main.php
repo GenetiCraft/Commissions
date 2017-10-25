@@ -100,6 +100,9 @@ class Main extends PluginBase implements Listener {
 			}elseif($event->getItem()->getId() === Item::FEATHER) {
 				$event->getPlayer()->addEffect(Effect::getEffect(Effect::JUMP)->setAmplifier(1)->setDuration(100)); //jump 2 for 5 secs
 			}
+			$event->getItem()->pop();
+			$inventory = $event->getPlayer()->getInventory();
+			$inventory->setItem($inventory->getHeldItemIndex(), $event->getItem());
 		}
 	}
 }

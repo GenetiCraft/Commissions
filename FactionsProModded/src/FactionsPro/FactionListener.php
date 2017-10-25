@@ -134,7 +134,7 @@ class FactionListener implements Listener {
                 if($this->plugin->isInFaction($p)){
                     $f = $this->plugin->getPlayerFaction($p);
                     $e = $this->plugin->prefs->get("PowerGainedPerKillingAnEnemy");
-                    if($ent instanceof Player){
+                    if($ent instanceof Player and $this->plugin->getFactionPower($f) > 0){
                         if($this->plugin->isInFaction($ent->getName())){
                            $this->plugin->addFactionPower($f,$e);
                         } else {
@@ -149,7 +149,7 @@ class FactionListener implements Listener {
             if($this->plugin->isInFaction($e)){
                 $f = $this->plugin->getPlayerFaction($e);
                 $e = $this->plugin->prefs->get("PowerGainedPerKillingAnEnemy");
-                if($ent->getLastDamageCause() instanceof EntityDamageByEntityEvent && $ent->getLastDamageCause()->getDamager() instanceof Player){
+                if($ent->getLastDamageCause() instanceof EntityDamageByEntityEvent && $ent->getLastDamageCause()->getDamager() instanceof Player and $this->plugin->getFactionPower($f) > 0){
                     if($this->plugin->isInFaction($ent->getLastDamageCause()->getDamager()->getName())){
                         $this->plugin->subtractFactionPower($f,$e*2);
                     } else {
