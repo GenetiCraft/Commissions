@@ -82,27 +82,29 @@ class Main extends PluginBase implements Listener {
 		}
 	}
 	public function onTap(PlayerInteractEvent $event) {
-		$name = $event->getPlayer()->getName();
+		$player = $event->getPlayer();
+		$name = $player->getName();
 		$expiration = new \DateTime();
 		if(!isset($this->timeout[$name]) or $this->timeout[$name]->getTimestamp() >= $expiration->getTimestamp()) {
 			$expiration->add(new \DateInterval('PT30S')); // add 30 secs to timeout
 			$this->timeout[$name] = $expiration;
-			if($event->getItem()->getId() === Item::GHAST_TEAR) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::REGENERATION)->setDuration(100)); //Regen 1 for 5 secs
-			}elseif($event->getItem()->getId() === Item::MAGMA_CREAM) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::FIRE_RESISTANCE)->setDuration(100)); //Fire resistance 1 for 5 secs
-			}elseif($event->getItem()->getId() === Item::SUGAR) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::SPEED)->setDuration(100)); //speed 2 for 5 secs
-			}elseif($event->getItem()->getId() === Item::GOLDEN_CARROT) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::NIGHT_VISION)->setDuration(100)); //night vision 1 for 5 secs
-			}elseif($event->getItem()->getId() === Item::BLAZE_ROD) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::STRENGTH)->setDuration(100)); //strength 1 for 5 secs
-			}elseif($event->getItem()->getId() === Item::FEATHER) {
-				$event->getPlayer()->addEffect(Effect::getEffect(Effect::JUMP)->setAmplifier(1)->setDuration(100)); //jump 2 for 5 secs
+			$item = $event->getItem();
+			if($item->getId() === Item::GHAST_TEAR) {
+				$player->addEffect(Effect::getEffect(Effect::REGENERATION)->setDuration(100)); //regen 1 for 5 secs
+			}elseif($item->getId() === Item::MAGMA_CREAM) {
+				$player->addEffect(Effect::getEffect(Effect::FIRE_RESISTANCE)->setDuration(100)); //fire resistance 1 for 5 secs
+			}elseif($item->getId() === Item::SUGAR) {
+				$player->addEffect(Effect::getEffect(Effect::SPEED)->setAmplifier(1)->setDuration(100)); //speed 2 for 5 secs
+			}elseif($item->getId() === Item::GOLDEN_CARROT) {
+				$player->addEffect(Effect::getEffect(Effect::NIGHT_VISION)->setDuration(100)); //night vision 1 for 5 secs
+			}elseif($item->getId() === Item::BLAZE_ROD) {
+				$player->addEffect(Effect::getEffect(Effect::STRENGTH)->setDuration(100)); //strength 1 for 5 secs
+			}elseif($item->getId() === Item::FEATHER) {
+				$player->addEffect(Effect::getEffect(Effect::JUMP)->setAmplifier(1)->setDuration(100)); //jump 2 for 5 secs
 			}
-			$event->getItem()->pop();
-			$inventory = $event->getPlayer()->getInventory();
-			$inventory->setItem($inventory->getHeldItemIndex(), $event->getItem());
+			$item->pop();
+			$inventory = $player->getInventory();
+			$inventory->setItem($inventory->getHeldItemIndex(), $item);
 		}
 	}
 }
