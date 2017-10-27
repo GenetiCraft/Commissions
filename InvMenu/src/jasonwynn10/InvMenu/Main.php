@@ -70,7 +70,7 @@ class Main extends PluginBase implements Listener {
 			$address = $this->getConfig()->get("TeamKill", $this->getServer()->getIp().":".$this->getServer()->getPort());
 		}
 		if(isset($address)) {
-			$address = explode(";", $address);
+			$address = explode(":", $address);
 			$event->getPlayer()->transfer($address[0], $address[1]);
 		}
 	}
