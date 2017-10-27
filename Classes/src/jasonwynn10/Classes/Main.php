@@ -78,7 +78,7 @@ class Main extends PluginBase implements Listener {
 						$entity->removeAllEffects();
 					}
 				}
-			}, 5); // check armor types after transaction completed
+			}, 1); // check armor types after transaction completed
 		}
 	}
 	public function onTap(PlayerInteractEvent $event) {
