@@ -1,0 +1,9 @@
+name: InvMenu
+main: jasonwynn10\InvMenu\Main
+version: 0.1.0
+api:
+ - 3.0.0
+ - 3.0.0-ALPHA8
+ - 3.0.0-ALPHA9
+description: "A custom inventory menu plugin"
+author: "jasonwynn10"
