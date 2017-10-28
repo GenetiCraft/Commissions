@@ -26,7 +26,11 @@ class Main extends PluginBase implements Listener {
 		$inventory->clearAll();
 		$inventory->setContents(
 			[
+				Item::get(Item::AIR),
+				Item::get(Item::AIR),
+				Item::get(Item::AIR),
 				Item::get(Item::CLOCK)->setCustomName(TextFormat::GREEN."Server"),
+				Item::get(Item::AIR),
 				Item::get(Item::BOOK)->setCustomName(TextFormat::YELLOW."Info")
 			]);
 		for($slot = 0; $slot <= $inventory->getHotbarSize(); $slot++) {
@@ -41,6 +45,8 @@ class Main extends PluginBase implements Listener {
 			$inventory->clearAll();
 			$inventory->setContents(
 				[
+					Item::get(Item::AIR),
+					Item::get(Item::AIR),
 					Item::get(Item::PAPER)->setCustomName("OIQT"),
 					Item::get(Item::PAPER)->setCustomName("Factions"),
 					Item::get(Item::PAPER)->setCustomName("Skyblock"),
@@ -54,19 +60,14 @@ class Main extends PluginBase implements Listener {
 		}elseif($item->getId() === Item::BOOK and stripos($item->getName(), "info") !== false) {
 			$event->getPlayer()->sendTip(TextFormat::BLUE."Twitter: @RavikalMC");
 		}elseif($item->getId() === Item::PAPER and stripos($item->getName(), "oiqt") !== false) {
-			//OIQT
 			$address = $this->getConfig()->get("OIQT", $this->getServer()->getIp().":".$this->getServer()->getPort());
 		}elseif($item->getId() === Item::PAPER and stripos($item->getName(), "factions") !== false) {
-			//Factions
 			$address = $this->getConfig()->get("Factions", $this->getServer()->getIp().":".$this->getServer()->getPort());
 		}elseif($item->getId() === Item::PAPER and stripos($item->getName(), "skyblock") !== false) {
-			//Skyblock
 			$address = $this->getConfig()->get("Skyblock", $this->getServer()->getIp().":".$this->getServer()->getPort());
 		}elseif($item->getId() === Item::PAPER and stripos($item->getName(), "uhc") !== false) {
-			//UHC
 			$address = $this->getConfig()->get("UHC", $this->getServer()->getIp().":".$this->getServer()->getPort());
 		}elseif($item->getId() === Item::PAPER and stripos($item->getName(), "teamkill") !== false) {
-			//TeamKill
 			$address = $this->getConfig()->get("TeamKill", $this->getServer()->getIp().":".$this->getServer()->getPort());
 		}
 		if(isset($address)) {
