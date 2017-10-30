@@ -10,29 +10,44 @@ use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 
 class Main extends PluginBase implements Listener {
-	public function onEnable(){
+	/** @var Item[] $menu1 */
+	private $menu1 = [];
+	/** @var Item[] $menu2 */
+	private $menu2 = [];
+	public function onEnable() {
+		$this->menu1 = [
+			Item::get(Item::AIR),
+			Item::get(Item::AIR),
+			Item::get(Item::AIR),
+			Item::get(Item::CLOCK)->setCustomName(TextFormat::GREEN."Server"),
+			Item::get(Item::AIR),
+			Item::get(Item::BOOK)->setCustomName(TextFormat::YELLOW."Info")
+		];
+		$this->menu2 = [
+			Item::get(Item::AIR),
+			Item::get(Item::AIR),
+			Item::get(Item::AIR),
+			Item::get(Item::PAPER)->setCustomName("OIQT"),
+			Item::get(Item::PAPER)->setCustomName("Factions"),
+			Item::get(Item::PAPER)->setCustomName("Skyblock"),
+			Item::get(Item::PAPER)->setCustomName("UHC"),
+			Item::get(Item::AIR),
+			Item::get(Item::AIR),
+			Item::get(Item::DIAMOND)->setCustomName("Back")
+		];
 		@mkdir($this->getDataFolder());
 		new Config($this->getDataFolder()."config.yml", Config::YAML, [
 			"OIQT" => "0.0.0.0:19132",
 			"Factions" => "0.0.0.0:19132",
 			"Skyblock" => "0.0.0.0:19132",
-			"UHC" => "0.0.0.0:19132",
-			"TeamKill" => "0.0.0.0:19132"
+			"UHC" => "0.0.0.0:19132"
 		]);
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 	public function onJoin(PlayerJoinEvent $event) {
 		$inventory = $event->getPlayer()->getInventory();
 		$inventory->clearAll();
-		$inventory->setContents(
-			[
-				Item::get(Item::AIR),
-				Item::get(Item::AIR),
-				Item::get(Item::AIR),
-				Item::get(Item::CLOCK)->setCustomName(TextFormat::GREEN."Server"),
-				Item::get(Item::AIR),
-				Item::get(Item::BOOK)->setCustomName(TextFormat::YELLOW."Info")
-			]);
+		$inventory->setContents($this->menu1);
 		for($slot = 0; $slot <= $inventory->getHotbarSize(); $slot++) {
 			$inventory->equipItem($slot); //hack for resetting hotbar positions
 		}
@@ -43,16 +58,7 @@ class Main extends PluginBase implements Listener {
 		if($item->getId() === Item::CLOCK and stripos($item->getName(), "server") !== false) {
 			$inventory = $event->getPlayer()->getInventory();
 			$inventory->clearAll();
-			$inventory->setContents(
-				[
-					Item::get(Item::AIR),
-					Item::get(Item::AIR),
-					Item::get(Item::PAPER)->setCustomName("OIQT"),
-					Item::get(Item::PAPER)->setCustomName("Factions"),
-					Item::get(Item::PAPER)->setCustomName("Skyblock"),
-					Item::get(Item::PAPER)->setCustomName("UHC"),
-					Item::get(Item::PAPER)->setCustomName("TeamKill")
-				]);
+			$inventory->setContents($this->menu2);
 			for($slot = 0; $slot <= $inventory->getHotbarSize(); $slot++) {
 				$inventory->equipItem($slot); //hack for resetting hotbar positions
 			}
@@ -67,12 +73,19 @@ class Main extends PluginBase implements Listener {
 			$address = $this->getConfig()->get("Skyblock", $this->getServer()->getIp().":".$this->getServer()->getPort());
 		}elseif($item->getId() === Item::PAPER and stripos($item->getName(), "uhc") !== false) {
 			$address = $this->getConfig()->get("UHC", $this->getServer()->getIp().":".$this->getServer()->getPort());
-		}elseif($item->getId() === Item::PAPER and stripos($item->getName(), "teamkill") !== false) {
-			$address = $this->getConfig()->get("TeamKill", $this->getServer()->getIp().":".$this->getServer()->getPort());
+		}elseif($item->getId() === Item::DIAMOND and stripos($item->getName(), "back") !== false) {
+			$inventory = $event->getPlayer()->getInventory();
+			$inventory->clearAll();
+			$inventory->setContents($this->menu1);
+			for($slot = 0; $slot <= $inventory->getHotbarSize(); $slot++) {
+				$inventory->equipItem($slot); //hack for resetting hotbar positions
+			}
+			$inventory->equipItem(0);
 		}
 		if(isset($address)) {
 			$address = explode(":", $address);
 			$event->getPlayer()->transfer($address[0], $address[1]);
+			$event->setCancelled(true); // prevent errors because player is now offline/closed
 		}
 	}
 }
