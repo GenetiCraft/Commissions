@@ -5,7 +5,9 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\item\Item;
+use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\PluginTask;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 
@@ -82,9 +84,24 @@ class Main extends PluginBase implements Listener {
 			$inventory->equipItem(0);
 		}
 		if(isset($address)) {
-			$address = explode(":", $address);
-			$event->getPlayer()->transfer($address[0], $address[1]);
-			$event->setCancelled(true); // prevent errors because player is now offline/closed
+			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $address, $event->getPlayer()->getName()) extends PluginTask {
+				/** @var string $address */
+				private $address;
+				/** @var string $player */
+				private $player;
+				public function __construct(Plugin $owner, string $address, string $name) {
+					parent::__construct($owner);
+					$this->address = $address;
+					$this->player = $name;
+				}
+				public function onRun(int $currentTick) {
+					$address = explode(":", $this->address);
+					$player = $this->getOwner()->getServer()->getPlayer($this->player);
+					if($player !== null) { // is player still online?
+						$player->transfer($address[0], $address[1]);
+					}
+				}
+			},1); // delayed transfer 1 tick to prevent errors
 		}
 	}
 }
