@@ -26,7 +26,6 @@ class Main extends PluginBase implements Listener {
 		$this->menu2 = [
 			Item::get(Item::AIR),
 			Item::get(Item::AIR),
-			Item::get(Item::AIR),
 			Item::get(Item::PAPER)->setCustomName("OIQT"),
 			Item::get(Item::PAPER)->setCustomName("Factions"),
 			Item::get(Item::PAPER)->setCustomName("Skyblock"),
