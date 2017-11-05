@@ -1,9 +1,8 @@
 name: DeathBan
 main: jasonwynn10\DeathBan\Main
-version: 0.1.0
+version: 0.2.0
 author: "jasonwynn10"
 description: "A plugin which bans players for 45 minutes when they die."
 api:
 - 3.0.0
-- 3.0.0-ALPHA8
 - 3.0.0-ALPHA9
