@@ -176,7 +176,8 @@ class CellPE extends PluginBase{
     }
 
     public function onDisable(){
-        $this->cellManager->saveCells();
+    	if(isset($this->cellManager))
+    		$this->cellManager->saveCells();
     }
 
 }
