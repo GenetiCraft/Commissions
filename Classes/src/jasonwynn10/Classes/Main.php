@@ -29,6 +29,8 @@ class Main extends PluginBase implements Listener {
 				public function onRun(int $currentTick) {
 					/** @var Player|null $entity */
 					$entity = $this->getOwner()->getServer()->getPlayer($this->player);
+					if($entity === null)
+						return;
 					if(count($entity->getInventory()->getArmorContents()) === 4) {
 						/** @var Item[] $slots */
 						$slots = $entity->getInventory()->getArmorContents();
