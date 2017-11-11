@@ -85,7 +85,7 @@ class Main extends PluginBase implements Listener {
 		$player = $event->getPlayer();
 		$name = $player->getName();
 		$expiration = new \DateTime();
-		if(!isset($this->timeout[$name]) or $this->timeout[$name]->getTimestamp() >= $expiration->getTimestamp()) {
+		if(!isset($this->timeout[$name]) or $this->timeout[$name]->diff($expiration) <= 0) {
 			$expiration->add(new \DateInterval('PT30S')); // add 30 secs to timeout
 			$this->timeout[$name] = $expiration;
 			$item = $event->getItem();
@@ -104,7 +104,7 @@ class Main extends PluginBase implements Listener {
 			}
 			$item->pop();
 			$inventory = $player->getInventory();
-			$inventory->setItem($inventory->getHeldItemIndex(), $item);
+			$inventory->setItemInHand($item);
 		}
 	}
 }
