@@ -75,8 +75,8 @@ class Main extends PluginBase implements Listener {
 							$entity->addEffect(Effect::getEffect(Effect::STRENGTH)->setDuration(INT32_MAX));
 							return;
 						}
-						$entity->removeAllEffects();
 					}
+					$entity->removeAllEffects();
 				}
 			}, 1); // check armor types after transaction completed
 		}
