@@ -7,14 +7,17 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
+use pocketmine\level\particle\FloatingTextParticle;
 use pocketmine\level\Position;
 use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\PluginTask;
 use pocketmine\utils\Config;
+use pocketmine\utils\TextFormat;
 
 class Main extends PluginBase implements Listener {
 	public function onEnable() {
@@ -55,9 +58,9 @@ class Main extends PluginBase implements Listener {
 	/**
 	 * @param string $crate
 	 *
-	 * @return Item[]
+	 * @return Item
 	 */
-	public function getRandomItems(string $crate) : array {
+	public function getRandomItem(string $crate) : Item {
 		$items = [];
 		foreach($this->getConfig()->get($crate, []) as $itemString) {
 			$arr = explode(" ", $itemString);
@@ -83,12 +86,11 @@ class Main extends PluginBase implements Listener {
 			}
 			$items[] = $item;
 		}
-		$randomised[10] = $items[array_rand($items)]; // randomize item given
-		return $randomised;
+		return $items[array_rand($items)]; // randomize item given
 	}
-	public function onPlace(BlockPlaceEvent $event) {
-		if($event->getBlock() instanceof Chest and in_array($event->getBlock()->getName(), $this->getConfig()->getAll(true))) {
-			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $event->getBlock()->asPosition()) extends PluginTask {
+	public function onPlace(BlockPlaceEvent $ev) {
+		if($ev->getBlock() instanceof Chest and in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true))) {
+			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $ev->getBlock()->asPosition()) extends PluginTask {
 				/** @var Position $coords */
 				private $coords;
 				public function __construct(Plugin $owner, Position $coords) {
@@ -102,12 +104,50 @@ class Main extends PluginBase implements Listener {
 						$tile->namedtag->Lock = new StringTag("Lock", $tile->getName());
 					}
 				}
-			}, 1); // 1 tick delay
+			}, 1); // 1 tick delay to allow tile to spawn
+			$particle = new FloatingTextParticle($ev->getBlock()->add(0,1),TextFormat::GREEN.TextFormat::OBFUSCATED."kj".TextFormat::RESET." ".$ev->getBlock()->getName()." ".TextFormat::GREEN.TextFormat::OBFUSCATED."kj");
+			$ev->getBlock()->getLevel()->addParticle($particle);
 		}
 	}
 	public function onInteract(PlayerInteractEvent $ev) {
-		if($ev->getBlock() instanceof Chest and in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true))) {
-			//TODO
+		if($ev->getBlock() instanceof Chest and
+			in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true)) and
+			$ev->getItem()->getId() === Item::TRIPWIRE_HOOK and
+			in_array($ev->getItem()->getName(), $this->getConfig()->getAll(true))
+		) {
+			$ev->setCancelled();
+			//TODO: particles
+			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new class($this, $ev->getPlayer(), $ev->getBlock()->getName()) extends PluginTask {
+				private $player;
+				private $name;
+				private $current = 0;
+				public function __construct(Plugin $owner, Player $player, string $name) {
+					parent::__construct($owner);
+					$this->player = $player->getName();
+					$this->name = $name;
+				}
+				public function onRun(int $currentTick) {
+					$player = $this->getOwner()->getServer()->getPlayerExact($this->player);
+					if($player === null) {
+						$this->getHandler()->remove();
+						return;
+					}
+					$arr = $this->getOwner()->getConfig()->get($this->name, []);
+					$rand = $arr[array_rand($arr)];
+					if($this->current <= 3 * count($arr)) {
+						$str = explode(" ", $rand);
+						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."k".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $str[0])." ".TextFormat::OBFUSCATED."k", "", 0, 10, 0);
+						$this->current++;
+					}else{
+						/** @var Item $item */
+						/** @noinspection PhpUndefinedMethodInspection */
+						$item = $this->getOwner()->getRandomItem($this->name);
+						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."k".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $item->getName())." ".TextFormat::OBFUSCATED."k", "", 0, 2 * 20, 0);
+						$player->getInventory()->addItem($item);
+						$this->getHandler()->remove();
+					}
+				}
+			},5,10);
 		}
 	}
 }

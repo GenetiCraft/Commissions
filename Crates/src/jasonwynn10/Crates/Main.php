@@ -44,7 +44,7 @@ class Main extends PluginBase implements Listener {
 	 *
 	 * @return Item[]
 	 */
-	public function getRandomItems(string $crate) : array {
+	public function getRandomItem(string $crate, $slot = 10) : array {
 		$items = [];
 		foreach($this->getConfig()->get($crate, []) as $itemString) {
 			/** {@link pocketmine\command\defaults\GiveCommand#execute} */
@@ -71,11 +71,11 @@ class Main extends PluginBase implements Listener {
 			}
 			$items[] = $item;
 		}
-		$randomised[10] = $items[array_rand($items)]; // randomize item given
+		$randomised[$slot] = $items[array_rand($items)]; // randomize item given
 		return $randomised;
 	}
 	public function onPlace(BlockPlaceEvent $event) {
-		if($event->getBlock() instanceof Chest) {
+		if($event->getBlock() instanceof Chest and in_array($event->getBlock()->getName(), $this->getConfig()->getAll(true))) {
 			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $event->getBlock()->asPosition()) extends PluginTask {
 				/** @var Position $coords */
 				private $coords;
@@ -105,7 +105,7 @@ class Main extends PluginBase implements Listener {
 					$ev->getPlayer()->sendMessage("This Crate is already in use!");
 					return;
 				}
-				$items = $this->getRandomItems($chestTile->getName());
+				$items = $this->getRandomItem($chestTile->getName(), 10);
 				$ev->getInventory()->setContents($items);
 				$item->pop();
 				$inventory->setItem($inventory->getHeldItemIndex(), $item);
