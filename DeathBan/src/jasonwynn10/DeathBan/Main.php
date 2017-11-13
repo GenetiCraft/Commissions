@@ -33,7 +33,7 @@ class Main extends PluginBase implements Listener {
 	public function onDeath(PlayerDeathEvent $event) {
 		$expiration = new \DateTime();
 		$expiration->add(new \DateInterval('PT45M'));
-		$this->getServer()->getNameBans()->addBan($event->getPlayer()->getName(), "This server is hardcore.\nYou may rejoin once your 45 minutes are up.", $expiration, "DeathBan Plugin");
+		$this->getServer()->getNameBans()->addBan($event->getPlayer()->getName(), "This server is hardcore.\nYou may rejoin once your 45 minutes are up.", $expiration, $this->getDescription()->getName());
 		$event->getPlayer()->kick("This server is hardcore.\nYou may rejoin in 45 minutes.", false);
 	}
 

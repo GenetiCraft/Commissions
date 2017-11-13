@@ -43,8 +43,7 @@ class Main extends PluginBase implements Listener {
 							$entity->addEffect(Effect::getEffect(Effect::SPEED)->setAmplifier(2)->setDuration(INT32_MAX));
 							$entity->addEffect(Effect::getEffect(Effect::DAMAGE_RESISTANCE)->setDuration(INT32_MAX));
 							return;
-						}
-						if(
+						}elseif(
 							$slots[0]->getId() === Item::IRON_HELMET and
 							$slots[1]->getId() === Item::IRON_CHESTPLATE and
 							$slots[2]->getId() === Item::IRON_LEGGINGS and
@@ -55,8 +54,7 @@ class Main extends PluginBase implements Listener {
 							$entity->addEffect(Effect::getEffect(Effect::HASTE)->setAmplifier(1)->setDuration(INT32_MAX));
 							$entity->addEffect(Effect::getEffect(Effect::INVISIBILITY)->setDuration(INT32_MAX));
 							return;
-						}
-						if(
+						}elseif(
 							$slots[0]->getId() === Item::GOLD_HELMET and
 							$slots[1]->getId() === Item::GOLD_CHESTPLATE and
 							$slots[2]->getId() === Item::GOLD_LEGGINGS and
@@ -65,8 +63,7 @@ class Main extends PluginBase implements Listener {
 							$entity->addEffect(Effect::getEffect(Effect::REGENERATION)->setAmplifier(1)->setDuration(INT32_MAX));
 							$entity->addEffect(Effect::getEffect(Effect::SPEED)->setAmplifier(1)->setDuration(INT32_MAX));
 							return;
-						}
-						if(
+						}elseif(
 							$slots[0]->getId() === Item::CHAIN_HELMET and
 							$slots[1]->getId() === Item::CHAIN_CHESTPLATE and
 							$slots[2]->getId() === Item::CHAIN_LEGGINGS and
@@ -87,26 +84,31 @@ class Main extends PluginBase implements Listener {
 		$player = $event->getPlayer();
 		$name = $player->getName();
 		$expiration = new \DateTime();
-		if(!isset($this->timeout[$name]) or $this->timeout[$name]->diff($expiration) <= 0) {
-			$expiration->add(new \DateInterval('PT30S')); // add 30 secs to timeout
-			$this->timeout[$name] = $expiration;
-			$item = $event->getItem();
-			if($item->getId() === Item::GHAST_TEAR) {
-				$player->addEffect(Effect::getEffect(Effect::REGENERATION)->setDuration(100)); //regen 1 for 5 secs
-			}elseif($item->getId() === Item::MAGMA_CREAM) {
-				$player->addEffect(Effect::getEffect(Effect::FIRE_RESISTANCE)->setDuration(100)); //fire resistance 1 for 5 secs
-			}elseif($item->getId() === Item::SUGAR) {
-				$player->addEffect(Effect::getEffect(Effect::SPEED)->setAmplifier(1)->setDuration(100)); //speed 2 for 5 secs
-			}elseif($item->getId() === Item::GOLDEN_CARROT) {
-				$player->addEffect(Effect::getEffect(Effect::NIGHT_VISION)->setDuration(100)); //night vision 1 for 5 secs
-			}elseif($item->getId() === Item::BLAZE_ROD) {
-				$player->addEffect(Effect::getEffect(Effect::STRENGTH)->setDuration(100)); //strength 1 for 5 secs
-			}elseif($item->getId() === Item::FEATHER) {
-				$player->addEffect(Effect::getEffect(Effect::JUMP)->setAmplifier(1)->setDuration(100)); //jump 2 for 5 secs
+		if(!isset($this->timeout[$name])) {
+			$diff = $this->timeout[$name]->diff($expiration);
+			$seconds = $diff->s;
+			$seconds += $diff->m * 60;
+			if($seconds <= 0) {
+				$expiration->add(new \DateInterval('PT30S')); // add 30 secs to timeout
+				$this->timeout[$name] = $expiration;
+				$item = $event->getItem();
+				if($item->getId() === Item::GHAST_TEAR) {
+					$player->addEffect(Effect::getEffect(Effect::REGENERATION)->setDuration(100)); //regen 1 for 5 secs
+				}elseif($item->getId() === Item::MAGMA_CREAM) {
+					$player->addEffect(Effect::getEffect(Effect::FIRE_RESISTANCE)->setDuration(100)); //fire resistance 1 for 5 secs
+				}elseif($item->getId() === Item::SUGAR) {
+					$player->addEffect(Effect::getEffect(Effect::SPEED)->setAmplifier(1)->setDuration(100)); //speed 2 for 5 secs
+				}elseif($item->getId() === Item::GOLDEN_CARROT) {
+					$player->addEffect(Effect::getEffect(Effect::NIGHT_VISION)->setDuration(100)); //night vision 1 for 5 secs
+				}elseif($item->getId() === Item::BLAZE_ROD) {
+					$player->addEffect(Effect::getEffect(Effect::STRENGTH)->setDuration(100)); //strength 1 for 5 secs
+				}elseif($item->getId() === Item::FEATHER) {
+					$player->addEffect(Effect::getEffect(Effect::JUMP)->setAmplifier(1)->setDuration(100)); //jump 2 for 5 secs
+				}
+				$item->pop();
+				$inventory = $player->getInventory();
+				$inventory->setItemInHand($item);
 			}
-			$item->pop();
-			$inventory = $player->getInventory();
-			$inventory->setItemInHand($item);
 		}
 	}
 }

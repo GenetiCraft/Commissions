@@ -13,9 +13,9 @@ class Main extends PluginBase {
 				if($item->getId() === Item::WOODEN_HOE and stripos($item->getName(), "crowbar") !== false) {
 					$spawnerTile = $this->getLevel()->getTile($this);
 					if($spawnerTile !== null) { // check if there are any plugins which make spawners actually work
-						return [Item::get(Item::MOB_SPAWNER,0,1, $spawnerTile->getCleanedNBT() ?? "")]; // saves NBT to item
+						return array_merge(parent::getDrops($item), [Item::get(Item::MOB_SPAWNER,0,1, $spawnerTile->getCleanedNBT() ?? "")]); // saves NBT to item
 					}
-					return [Item::get(Item::MOB_SPAWNER)];
+					return array_merge(parent::getDrops($item), [Item::get(Item::MOB_SPAWNER)]);
 				}
 				return parent::getDrops($item);
 			}

@@ -47,6 +47,7 @@ class Main extends PluginBase implements Listener {
 	public function getRandomItems(string $crate) : array {
 		$items = [];
 		foreach($this->getConfig()->get($crate, []) as $itemString) {
+			/** {@link pocketmine\command\defaults\GiveCommand#execute} */
 			$arr = explode(" ", $itemString);
 			$item = Item::fromString($arr[0]);
 			if(!isset($arr[1])) {
@@ -75,7 +76,7 @@ class Main extends PluginBase implements Listener {
 	}
 	public function onPlace(BlockPlaceEvent $event) {
 		if($event->getBlock() instanceof Chest) {
-			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $event->getBlock()->asPosition()) extends PluginTask{
+			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $event->getBlock()->asPosition()) extends PluginTask {
 				/** @var Position $coords */
 				private $coords;
 				public function __construct(Plugin $owner, Position $coords) {
@@ -89,7 +90,7 @@ class Main extends PluginBase implements Listener {
 						$tile->namedtag->Lock = new StringTag("Lock", $tile->getName());
 					}
 				}
-			}, 1); // 1 tick delay
+			}, 1); // 1 tick delay for Post-block place
 		}
 	}
 	public function onInventoryOpen(InventoryOpenEvent $ev) {
