@@ -7,6 +7,7 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
+use pocketmine\level\particle\DustParticle;
 use pocketmine\level\particle\FloatingTextParticle;
 use pocketmine\level\Position;
 use pocketmine\nbt\JsonNBTParser;
@@ -134,7 +135,8 @@ class Main extends PluginBase implements Listener {
 			in_array($ev->getItem()->getName(), $this->getConfig()->getAll(true))
 		) {
 			$ev->setCancelled();
-			//TODO: particles
+			$particle = new DustParticle($ev->getBlock()->add(0, 1), $r = 0, $g = 0, $b = 0, $a = 255); //TODO: color
+			$ev->getBlock()->getLevel()->addParticle($particle);
 			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new class($this, $ev->getPlayer(), $ev->getBlock()->getName()) extends PluginTask {
 				private $player;
 				private $name;
