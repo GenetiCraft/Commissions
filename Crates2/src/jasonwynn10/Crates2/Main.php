@@ -16,6 +16,7 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\PluginTask;
+use pocketmine\tile\Chest as ChestTile;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 
@@ -88,6 +89,13 @@ class Main extends PluginBase implements Listener {
 		}
 		return $items[array_rand($items)]; // randomize item given
 	}
+
+	/**
+	 * @priority MONITOR
+	 * @ignoreCancelled true
+	 *
+	 * @param BlockPlaceEvent $ev
+	 */
 	public function onPlace(BlockPlaceEvent $ev) {
 		if($ev->getBlock() instanceof Chest and in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true))) {
 			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $ev->getBlock()->asPosition()) extends PluginTask {
@@ -98,17 +106,27 @@ class Main extends PluginBase implements Listener {
 					$this->coords = $coords;
 				}
 				public function onRun(int $currentTick) {
-					/** @var \pocketmine\tile\Chest|null $tile */
+					echo "running lock task";
+					/** @var ChestTile|null $tile */
 					$tile = $this->coords->getLevel()->getTile($this->coords);
 					if(in_array($tile->getName(), $this->getOwner()->getConfig()->getAll(true))) {
 						$tile->namedtag->Lock = new StringTag("Lock", $tile->getName());
+						echo "lock success";
 					}
 				}
 			}, 1); // 1 tick delay to allow tile to spawn
 			$particle = new FloatingTextParticle($ev->getBlock()->add(0,1),TextFormat::GREEN.TextFormat::OBFUSCATED."kj".TextFormat::RESET." ".$ev->getBlock()->getName()." ".TextFormat::GREEN.TextFormat::OBFUSCATED."kj");
 			$ev->getBlock()->getLevel()->addParticle($particle);
+			echo "particle added";
 		}
 	}
+
+	/**
+	 *
+	 *
+	 *
+	 * @param PlayerInteractEvent $ev
+	 */
 	public function onInteract(PlayerInteractEvent $ev) {
 		if($ev->getBlock() instanceof Chest and
 			in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true)) and
@@ -127,16 +145,20 @@ class Main extends PluginBase implements Listener {
 					$this->name = $name;
 				}
 				public function onRun(int $currentTick) {
+					echo "title task";
 					$player = $this->getOwner()->getServer()->getPlayerExact($this->player);
 					if($player === null) {
+						echo "player offline";
 						$this->getHandler()->remove();
 						return;
 					}
 					$arr = $this->getOwner()->getConfig()->get($this->name, []);
-					$rand = $arr[array_rand($arr)];
+					$rand = $arr[$r = array_rand($arr)];
+					echo "random = ".$r;
 					if($this->current <= 3 * count($arr)) {
 						$str = explode(" ", $rand);
 						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."k".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $str[0])." ".TextFormat::OBFUSCATED."k", "", 0, 10, 0);
+						echo "title added";
 						$this->current++;
 					}else{
 						/** @var Item $item */
@@ -144,6 +166,7 @@ class Main extends PluginBase implements Listener {
 						$item = $this->getOwner()->getRandomItem($this->name);
 						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."k".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $item->getName())." ".TextFormat::OBFUSCATED."k", "", 0, 2 * 20, 0);
 						$player->getInventory()->addItem($item);
+						echo "success";
 						$this->getHandler()->remove();
 					}
 				}
