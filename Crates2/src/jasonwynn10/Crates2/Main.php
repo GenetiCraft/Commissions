@@ -9,15 +9,12 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
 use pocketmine\level\particle\DustParticle;
 use pocketmine\level\particle\FloatingTextParticle;
-use pocketmine\level\Position;
 use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\PluginTask;
-use pocketmine\tile\Chest as ChestTile;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 
@@ -98,24 +95,8 @@ class Main extends PluginBase implements Listener {
 	 * @param BlockPlaceEvent $ev
 	 */
 	public function onPlace(BlockPlaceEvent $ev) {
-		if($ev->getBlock() instanceof Chest) {
-			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $ev->getBlock()->asPosition()) extends PluginTask {
-				/** @var Position $coords */
-				private $coords;
-				public function __construct(Plugin $owner, Position $coords) {
-					parent::__construct($owner);
-					$this->coords = $coords;
-				}
-				public function onRun(int $currentTick) {
-					echo "running lock task\n";
-					/** @var ChestTile|null $tile */
-					$tile = $this->coords->getLevel()->getTile($this->coords);
-					if(in_array($tile->getName(), $this->getOwner()->getConfig()->getAll(true))) {
-						$tile->namedtag->Lock = new StringTag("Lock", $tile->getName());
-						echo "lock success";
-					}
-				}
-			}, 1); // 1 tick delay to allow tile to spawn
+		echo "placed event\n";
+		if($ev->getBlock() instanceof Chest and in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true))) {
 			$particle = new FloatingTextParticle($ev->getBlock()->add(0,1),TextFormat::GREEN.TextFormat::OBFUSCATED."kj".TextFormat::RESET." ".$ev->getBlock()->getName()." ".TextFormat::GREEN.TextFormat::OBFUSCATED."kj");
 			$level = $ev->getBlock()->getLevel();
 			$level->addParticle($particle);
@@ -136,7 +117,33 @@ class Main extends PluginBase implements Listener {
 			in_array($ev->getItem()->getName(), $this->getConfig()->getAll(true))
 		) {
 			$ev->setCancelled();
-			$particle = new DustParticle($ev->getBlock()->add(0, 1), $r = 0, $g = 0, $b = 0, $a = 255); //TODO: color
+			$particles = new Config($this->getDataFolder()."particles.json", Config::JSON, [
+				"Vote" => [
+					0 => 255,
+					1 => 255,
+					2 => 0,
+					3 => 0
+				],
+				"Legendary" => [
+					0 => 255,
+					1 => 0,
+					2 => 128,
+					3 => 255
+				],
+				"Rare" => [
+					0 => 255,
+					1 => 0,
+					2 => 255,
+					3 => 0
+				]
+			]);
+			$argb = $particles->get($ev->getItem()->getName(), [
+				0 => 255,
+				1 => 0,
+				2 => 255,
+				3 => 255
+			]); // default to light blue
+			$particle = new DustParticle($ev->getBlock()->add(0, 1), $argb[1], $argb[2], $argb[3], $argb[0]);
 			$level = $ev->getBlock()->getLevel();
 			$level->addParticle($particle);
 			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new class($this, $ev->getPlayer(), $ev->getBlock()->getName()) extends PluginTask {
@@ -161,20 +168,25 @@ class Main extends PluginBase implements Listener {
 					echo "random = ".$r."\n";
 					if($this->current <= 3 * count($arr)) {
 						$str = explode(" ", $rand);
-						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."k".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $str[0])." ".TextFormat::OBFUSCATED."k", "", 0, 10, 0);
+						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."kj".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $str[0])." ".TextFormat::OBFUSCATED."kj", "", 0, 10, 0);
 						echo "title added\n";
 						$this->current++;
 					}else{
 						/** @var Item $item */
 						/** @noinspection PhpUndefinedMethodInspection */
 						$item = $this->getOwner()->getRandomItem($this->name);
-						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."k".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $item->getName())." ".TextFormat::OBFUSCATED."k", "", 0, 2 * 20, 0);
+						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."kj".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $item->getName())." ".TextFormat::OBFUSCATED."kj", "", 0, 2 * 20, 0);
 						$player->getInventory()->addItem($item);
 						echo "success\n";
 						$this->getHandler()->remove();
 					}
 				}
 			},5,10);
+		}elseif($ev->getBlock() instanceof Chest and
+			in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true)) and
+			$ev->getItem()->getId() !== Item::TRIPWIRE_HOOK
+		) {
+			$ev->setCancelled();
 		}
 	}
 }
