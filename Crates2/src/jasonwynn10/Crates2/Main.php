@@ -98,7 +98,7 @@ class Main extends PluginBase implements Listener {
 	 * @param BlockPlaceEvent $ev
 	 */
 	public function onPlace(BlockPlaceEvent $ev) {
-		if($ev->getBlock() instanceof Chest and in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true))) {
+		if($ev->getBlock() instanceof Chest) {
 			$this->getServer()->getScheduler()->scheduleDelayedTask(new class($this, $ev->getBlock()->asPosition()) extends PluginTask {
 				/** @var Position $coords */
 				private $coords;
@@ -107,7 +107,7 @@ class Main extends PluginBase implements Listener {
 					$this->coords = $coords;
 				}
 				public function onRun(int $currentTick) {
-					echo "running lock task";
+					echo "running lock task\n";
 					/** @var ChestTile|null $tile */
 					$tile = $this->coords->getLevel()->getTile($this->coords);
 					if(in_array($tile->getName(), $this->getOwner()->getConfig()->getAll(true))) {
@@ -117,14 +117,15 @@ class Main extends PluginBase implements Listener {
 				}
 			}, 1); // 1 tick delay to allow tile to spawn
 			$particle = new FloatingTextParticle($ev->getBlock()->add(0,1),TextFormat::GREEN.TextFormat::OBFUSCATED."kj".TextFormat::RESET." ".$ev->getBlock()->getName()." ".TextFormat::GREEN.TextFormat::OBFUSCATED."kj");
-			$ev->getBlock()->getLevel()->addParticle($particle);
-			echo "particle added";
+			$level = $ev->getBlock()->getLevel();
+			$level->addParticle($particle);
+			echo "particle added\n";
 		}
 	}
 
 	/**
-	 *
-	 *
+	 * @priority LOW
+	 * @ignoreCancelled false
 	 *
 	 * @param PlayerInteractEvent $ev
 	 */
@@ -136,7 +137,8 @@ class Main extends PluginBase implements Listener {
 		) {
 			$ev->setCancelled();
 			$particle = new DustParticle($ev->getBlock()->add(0, 1), $r = 0, $g = 0, $b = 0, $a = 255); //TODO: color
-			$ev->getBlock()->getLevel()->addParticle($particle);
+			$level = $ev->getBlock()->getLevel();
+			$level->addParticle($particle);
 			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new class($this, $ev->getPlayer(), $ev->getBlock()->getName()) extends PluginTask {
 				private $player;
 				private $name;
@@ -147,20 +149,20 @@ class Main extends PluginBase implements Listener {
 					$this->name = $name;
 				}
 				public function onRun(int $currentTick) {
-					echo "title task";
+					echo "title task\n";
 					$player = $this->getOwner()->getServer()->getPlayerExact($this->player);
 					if($player === null) {
-						echo "player offline";
+						echo "player offline\n";
 						$this->getHandler()->remove();
 						return;
 					}
 					$arr = $this->getOwner()->getConfig()->get($this->name, []);
 					$rand = $arr[$r = array_rand($arr)];
-					echo "random = ".$r;
+					echo "random = ".$r."\n";
 					if($this->current <= 3 * count($arr)) {
 						$str = explode(" ", $rand);
 						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."k".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $str[0])." ".TextFormat::OBFUSCATED."k", "", 0, 10, 0);
-						echo "title added";
+						echo "title added\n";
 						$this->current++;
 					}else{
 						/** @var Item $item */
@@ -168,7 +170,7 @@ class Main extends PluginBase implements Listener {
 						$item = $this->getOwner()->getRandomItem($this->name);
 						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."k".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $item->getName())." ".TextFormat::OBFUSCATED."k", "", 0, 2 * 20, 0);
 						$player->getInventory()->addItem($item);
-						echo "success";
+						echo "success\n";
 						$this->getHandler()->remove();
 					}
 				}
