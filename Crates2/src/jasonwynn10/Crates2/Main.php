@@ -2,19 +2,20 @@
 declare(strict_types=1);
 namespace jasonwynn10\Crates2;
 
-use pocketmine\block\Chest;
+use pocketmine\block\Block;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
-use pocketmine\level\particle\DustParticle;
 use pocketmine\level\particle\FloatingTextParticle;
+use pocketmine\level\particle\GenericParticle;
 use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\PluginTask;
+use pocketmine\tile\Chest;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 
@@ -95,12 +96,13 @@ class Main extends PluginBase implements Listener {
 	 * @param BlockPlaceEvent $ev
 	 */
 	public function onPlace(BlockPlaceEvent $ev) {
-		echo "placed event\n";
-		if($ev->getBlock() instanceof Chest and in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true))) {
-			$particle = new FloatingTextParticle($ev->getBlock()->add(0,1),TextFormat::GREEN.TextFormat::OBFUSCATED."kj".TextFormat::RESET." ".$ev->getBlock()->getName()." ".TextFormat::GREEN.TextFormat::OBFUSCATED."kj");
-			$level = $ev->getBlock()->getLevel();
+		if($ev->getBlock()->getId() === Block::CHEST or in_array($ev->getItem()->getName(), $this->getConfig()->getAll(true))) {
+			$block = $ev->getBlock();
+			$block->x <= 0 ? $pos = $block->add(0.5,1) : $pos = $block->add(-0.5,1);
+			$block->z <= 0 ? $pos = $pos->add(0,0,0.5) : $pos = $pos->add(0,0,-0.5);
+			$particle = new FloatingTextParticle($pos,"", TextFormat::GREEN.TextFormat::OBFUSCATED."kj".TextFormat::RESET." ".$ev->getItem()->getName()." ".TextFormat::GREEN.TextFormat::OBFUSCATED."kj");
+			$level = $block->getLevel();
 			$level->addParticle($particle);
-			echo "particle added\n";
 		}
 	}
 
@@ -111,13 +113,16 @@ class Main extends PluginBase implements Listener {
 	 * @param PlayerInteractEvent $ev
 	 */
 	public function onInteract(PlayerInteractEvent $ev) {
-		if($ev->getBlock() instanceof Chest and
-			in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true)) and
+		/** @var Chest $tile */
+		$tile = $ev->getBlock()->getLevel()->getTile($ev->getBlock());
+		if($ev->getBlock()->getId() === Block::CHEST and
+			in_array($tile->getName(), $this->getConfig()->getAll(true)) and
 			$ev->getItem()->getId() === Item::TRIPWIRE_HOOK and
 			in_array($ev->getItem()->getName(), $this->getConfig()->getAll(true))
 		) {
 			$ev->setCancelled();
-			$particles = new Config($this->getDataFolder()."particles.json", Config::JSON, [
+			$block = $ev->getBlock();
+			$particles = new Config($this->getDataFolder()."particleColors.json", Config::JSON, [
 				"Vote" => [
 					0 => 255,
 					1 => 255,
@@ -143,47 +148,51 @@ class Main extends PluginBase implements Listener {
 				2 => 255,
 				3 => 255
 			]); // default to light blue
-			$particle = new DustParticle($ev->getBlock()->add(0, 1), $argb[1], $argb[2], $argb[3], $argb[0]);
+			$block->x <= 0 ? $pos = $block->add(0.5,1.5) : $pos = $block->add(-0.5,1.5);
+			$block->z <= 0 ? $pos = $pos->add(0,0,0.5) : $pos = $pos->add(0,0,-0.5);
+			$particle = new GenericParticle($pos, 5, (($argb[0] & 0xff) << 24) | (($argb[1] & 0xff) << 16) | (($argb[2] & 0xff) << 8) | ($argb[3] & 0xff));
 			$level = $ev->getBlock()->getLevel();
 			$level->addParticle($particle);
-			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new class($this, $ev->getPlayer(), $ev->getBlock()->getName()) extends PluginTask {
+			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new class($this, $ev->getPlayer(), $tile->getName()) extends PluginTask {
 				private $player;
 				private $name;
 				private $current = 0;
+				private $last = -1;
 				public function __construct(Plugin $owner, Player $player, string $name) {
 					parent::__construct($owner);
 					$this->player = $player->getName();
 					$this->name = $name;
 				}
 				public function onRun(int $currentTick) {
-					echo "title task\n";
 					$player = $this->getOwner()->getServer()->getPlayerExact($this->player);
 					if($player === null) {
-						echo "player offline\n";
 						$this->getHandler()->remove();
 						return;
 					}
+					/** @var string[] $arr */
 					$arr = $this->getOwner()->getConfig()->get($this->name, []);
-					$rand = $arr[$r = array_rand($arr)];
-					echo "random = ".$r."\n";
+					$r = array_rand($arr);
+					while($r === $this->last) {
+						$r = array_rand($arr);
+					}
+					$this->last = $r;
+					$rand = $arr[$r];
 					if($this->current <= 3 * count($arr)) {
 						$str = explode(" ", $rand);
-						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."kj".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $str[0])." ".TextFormat::OBFUSCATED."kj", "", 0, 10, 0);
-						echo "title added\n";
+						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."kj".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $str[0])." ".TextFormat::OBFUSCATED."kj", "", 0, 60, 0);
 						$this->current++;
 					}else{
 						/** @var Item $item */
 						/** @noinspection PhpUndefinedMethodInspection */
 						$item = $this->getOwner()->getRandomItem($this->name);
-						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."kj".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $item->getName())." ".TextFormat::OBFUSCATED."kj", "", 0, 2 * 20, 0);
+						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."kj".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $item->getName())." ".TextFormat::OBFUSCATED."kj", "", 0, 100, 0);
 						$player->getInventory()->addItem($item);
-						echo "success\n";
 						$this->getHandler()->remove();
 					}
 				}
 			},5,10);
-		}elseif($ev->getBlock() instanceof Chest and
-			in_array($ev->getBlock()->getName(), $this->getConfig()->getAll(true)) and
+		}elseif($ev->getBlock()->getId() === Block::CHEST and
+			in_array($tile->getName(), $this->getConfig()->getAll(true)) and
 			$ev->getItem()->getId() !== Item::TRIPWIRE_HOOK
 		) {
 			$ev->setCancelled();
