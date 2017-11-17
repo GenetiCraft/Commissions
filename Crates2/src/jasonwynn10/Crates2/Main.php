@@ -3,14 +3,18 @@ declare(strict_types=1);
 namespace jasonwynn10\Crates2;
 
 use pocketmine\block\Block;
+use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\item\Item;
 use pocketmine\level\particle\FloatingTextParticle;
-use pocketmine\level\particle\GenericParticle;
+use pocketmine\level\particle\HugeExplodeSeedParticle;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
@@ -20,6 +24,8 @@ use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 
 class Main extends PluginBase implements Listener {
+	/** @var FloatingTextParticle[] $particles */
+	private $particles = [];
 	public function onEnable() {
 		@mkdir($this->getDataFolder());
 		new Config($this->getDataFolder()."config.yml",Config::YAML, [
@@ -52,7 +58,24 @@ class Main extends PluginBase implements Listener {
 			]
 		]);
 		$this->getConfig()->reload();
+		$particlesData = new Config($this->getDataFolder()."TextParticles.json", Config::JSON);
+		foreach($particlesData->getAll() as $pos => $title) {
+			$coords = explode(";", $pos);
+			$this->particles[] = new FloatingTextParticle(new Vector3($coords[0], $coords[1], $coords[2]),"", $title);
+		}
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+	}
+
+	public function onDisable() {
+		$particlesData = new Config($this->getDataFolder()."TextParticles.json", Config::JSON);
+		$particles = [];
+		foreach($this->particles as $particle) {
+			$name = $particle->getTitle();
+			$pos = $particle->x.";".$particle->y.";".$particle->z;
+			$particles[$pos] = $name;
+		}
+		$particlesData->setAll($particles);
+		$particlesData->save(true);
 	}
 
 	/**
@@ -100,9 +123,43 @@ class Main extends PluginBase implements Listener {
 			$block = $ev->getBlock();
 			$block->x <= 0 ? $pos = $block->add(0.5,1) : $pos = $block->add(-0.5,1);
 			$block->z <= 0 ? $pos = $pos->add(0,0,0.5) : $pos = $pos->add(0,0,-0.5);
-			$particle = new FloatingTextParticle($pos,"", TextFormat::GREEN.TextFormat::OBFUSCATED."kj".TextFormat::RESET." ".$ev->getItem()->getName()." ".TextFormat::GREEN.TextFormat::OBFUSCATED."kj");
-			$level = $block->getLevel();
-			$level->addParticle($particle);
+			$particle = new FloatingTextParticle($pos,"", TextFormat::GREEN.$ev->getItem()->getName());
+			$block->getLevel()->addParticle($particle);
+			$this->particles[] = $particle;
+		}
+	}
+
+	/**
+	 * @priority MONITOR
+	 * @ignoreCancelled true
+	 *
+	 * @param BlockBreakEvent $ev
+	 */
+	public function onBreak(BlockBreakEvent $ev) {
+		$block = $ev->getBlock();
+		foreach($this->particles as $key => $particle) {
+			if($particle->distance($block) <= 2) {
+				$particle->setInvisible();
+				$block->getLevel()->addParticle($particle);
+				unset($this->particles[$key]);
+				return;
+			}
+		}
+	}
+
+	/**
+	 * @priority MONITOR
+	 * @ignoreCancelled true
+	 *
+	 * @param PlayerJoinEvent $ev
+	 */
+	public function onJoin(PlayerJoinEvent $ev) {
+		//TODO: make multiworld compatible
+		foreach($this->particles as $particle) {
+			$p = $particle->encode();
+			foreach($p as $pk) {
+				$ev->getPlayer()->dataPacket($pk);
+			}
 		}
 	}
 
@@ -122,46 +179,19 @@ class Main extends PluginBase implements Listener {
 		) {
 			$ev->setCancelled();
 			$block = $ev->getBlock();
-			$particles = new Config($this->getDataFolder()."particleColors.json", Config::JSON, [
-				"Vote" => [
-					0 => 255,
-					1 => 255,
-					2 => 0,
-					3 => 0
-				],
-				"Legendary" => [
-					0 => 255,
-					1 => 0,
-					2 => 128,
-					3 => 255
-				],
-				"Rare" => [
-					0 => 255,
-					1 => 0,
-					2 => 255,
-					3 => 0
-				]
-			]);
-			$argb = $particles->get($ev->getItem()->getName(), [
-				0 => 255,
-				1 => 0,
-				2 => 255,
-				3 => 255
-			]); // default to light blue
 			$block->x <= 0 ? $pos = $block->add(0.5,1.5) : $pos = $block->add(-0.5,1.5);
 			$block->z <= 0 ? $pos = $pos->add(0,0,0.5) : $pos = $pos->add(0,0,-0.5);
-			$particle = new GenericParticle($pos, 5, (($argb[0] & 0xff) << 24) | (($argb[1] & 0xff) << 16) | (($argb[2] & 0xff) << 8) | ($argb[3] & 0xff));
-			$level = $ev->getBlock()->getLevel();
-			$level->addParticle($particle);
-			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new class($this, $ev->getPlayer(), $tile->getName()) extends PluginTask {
+			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new class($this, $ev->getPlayer(), $tile->getName(), $pos) extends PluginTask {
 				private $player;
 				private $name;
 				private $current = 0;
 				private $last = -1;
-				public function __construct(Plugin $owner, Player $player, string $name) {
+				private $pos;
+				public function __construct(Plugin $owner, Player $player, string $name, Vector3 $pos) {
 					parent::__construct($owner);
 					$this->player = $player->getName();
 					$this->name = $name;
+					$this->pos = $pos;
 				}
 				public function onRun(int $currentTick) {
 					$player = $this->getOwner()->getServer()->getPlayerExact($this->player);
@@ -179,18 +209,32 @@ class Main extends PluginBase implements Listener {
 					$rand = $arr[$r];
 					if($this->current <= 3 * count($arr)) {
 						$str = explode(" ", $rand);
-						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."kj".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $str[0])." ".TextFormat::OBFUSCATED."kj", "", 0, 60, 0);
+						$player->addTitle(TextFormat::DARK_BLUE.str_replace("_"," ", $str[0]), "", 0, 60, 0);
 						$this->current++;
 					}else{
 						/** @var Item $item */
 						/** @noinspection PhpUndefinedMethodInspection */
 						$item = $this->getOwner()->getRandomItem($this->name);
-						$player->addTitle(TextFormat::BLUE.TextFormat::OBFUSCATED."kj".TextFormat::RESET.TextFormat::BLUE." ".str_replace("_"," ", $item->getName())." ".TextFormat::OBFUSCATED."kj", "", 0, 100, 0);
+						$player->addTitle(TextFormat::DARK_BLUE.str_replace("_"," ", $item->getName()), "", 0, 100, 0);
+
+						$level = $player->getLevel();
+
+						$level->addParticle(new HugeExplodeSeedParticle($this->pos));
+
+						$pk = new LevelSoundEventPacket();
+						$pk->sound = LevelSoundEventPacket::SOUND_EXPLODE;
+						$pk->pitch = 1;
+						$pk->extraData = -1;
+						$pk->unknownBool = false;
+						$pk->disableRelativeVolume = false;
+						$pk->position = $this->pos;
+						$player->dataPacket($pk);
+
 						$player->getInventory()->addItem($item);
 						$this->getHandler()->remove();
 					}
 				}
-			},5,10);
+			},5,20);
 		}elseif($ev->getBlock()->getId() === Block::CHEST and
 			in_array($tile->getName(), $this->getConfig()->getAll(true)) and
 			$ev->getItem()->getId() !== Item::TRIPWIRE_HOOK
