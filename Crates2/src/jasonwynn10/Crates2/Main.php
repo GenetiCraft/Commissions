@@ -209,13 +209,13 @@ class Main extends PluginBase implements Listener {
 					$rand = $arr[$r];
 					if($this->current <= 3 * count($arr)) {
 						$str = explode(" ", $rand);
-						$player->addTitle(TextFormat::DARK_BLUE.str_replace("_"," ", $str[0]), "", 0, 60, 0);
+						$player->addTitle(TextFormat::RED.str_replace("_"," ", $str[0]), "", 0, 60, 0);
 						$this->current++;
 					}else{
 						/** @var Item $item */
 						/** @noinspection PhpUndefinedMethodInspection */
 						$item = $this->getOwner()->getRandomItem($this->name);
-						$player->addTitle(TextFormat::DARK_BLUE.str_replace("_"," ", $item->getName()), "", 0, 100, 0);
+						$player->addTitle(TextFormat::RED.str_replace("_"," ", $item->getName()), "", 0, 100, 0);
 
 						$level = $player->getLevel();
 
