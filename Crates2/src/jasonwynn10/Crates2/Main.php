@@ -14,6 +14,7 @@ use pocketmine\level\particle\HugeExplodeSeedParticle;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
@@ -207,6 +208,16 @@ class Main extends PluginBase implements Listener {
 					}
 					$this->last = $r;
 					$rand = $arr[$r];
+
+					$b = Block::get(Block::GLASS);
+
+					$pk = new LevelEventPacket();
+					$pk->evid = LevelEventPacket::EVENT_PARTICLE_DESTROY;
+					$pk->position = $player->asVector3();
+					$pk->data = $b->getId() | ($b->getDamage() << 8);
+
+					$player->dataPacket($pk);
+
 					if($this->current <= 3 * count($arr)) {
 						$str = explode(" ", $rand);
 						$player->addTitle(TextFormat::RED.str_replace("_"," ", $str[0]), "", 0, 60, 0);
