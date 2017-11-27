@@ -1,0 +1,29 @@
+# contains a list of all valid kingdoms
+Kingdoms:
+  Dracosis:
+    Castle:
+      x: 0
+      y: 0
+      z: 0
+    Village:
+      x: 0
+      y: 0
+      z: 0
+  Quay:
+    Castle:
+      x: 0
+      y: 0
+      z: 0
+    Village:
+      x: 0
+      y: 0
+      z: 0
+  Cordian:
+    Castle:
+      x: 0
+      y: 0
+      z: 0
+    Village:
+      x: 0
+      y: 0
+      z: 0
