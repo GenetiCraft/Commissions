@@ -6,6 +6,8 @@ api:
  - 3.0.0-ALPHA9
 author: "jasonwynn10"
 description: "The Core Plugin"
+depend:
+ - EconomyAPI
 permissions:
  cr:
    default: op
