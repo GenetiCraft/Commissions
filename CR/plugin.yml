@@ -1,0 +1,23 @@
+name: CR
+main: jasonwynn10\CR\Main
+version: 0.1.0
+api:
+ - 3.0.0
+ - 3.0.0-ALPHA9
+author: "jasonwynn10"
+description: "The Core Plugin"
+permissions:
+ cr:
+   default: op
+   description: ""
+   children:
+     cr.command:
+       default: op
+       description: ""
+       children:
+         cr.command.warpme:
+           default: true
+           description: ""
+         cr.command.kingdom:
+           default: true
+           description: ""

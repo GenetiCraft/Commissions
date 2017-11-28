@@ -18,8 +18,17 @@ class EventListener implements Listener {
 		$plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
 		$this->plugin = $plugin;
 	}
+
+	/**
+	 * @priority MONITOR
+	 * @ignoreCancelled true
+	 *
+	 * @param PlayerJoinEvent $event
+	 */
 	public function onJoin(PlayerJoinEvent $event) {
-		$form = new KingdomSelectionForm($this->plugin);
-		$event->getPlayer()->sendForm($form);
+		if($this->plugin->getPlayerKingdom($event->getPlayer()) === null) {
+			$form = new KingdomSelectionForm();
+			$event->getPlayer()->sendForm($form);
+		}
 	}
 }
