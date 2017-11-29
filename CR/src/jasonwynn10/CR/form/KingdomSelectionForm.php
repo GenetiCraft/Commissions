@@ -35,7 +35,7 @@ class KingdomSelectionForm extends MenuForm {
 	 * @return null|Form
 	 */
 	public function onSubmit(Player $player) : ?Form {
-		$option = $this->getOption($this->getSelectedOptionIndex())->getText();
+		$option = $this->getSelectedOption()->getText();
 		if(Main::getInstance()->setPlayerKingdom($player, $option)) {
 			return new TeleportLocationForm($option);
 		}else{

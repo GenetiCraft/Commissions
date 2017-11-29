@@ -39,7 +39,7 @@ class TeleportLocationForm extends MenuForm {
 	 */
 	public function onSubmit(Player $player) : ?Form {
 		$plugin = Main::getInstance();
-		$option = $this->getOption($this->getSelectedOptionIndex())->getText();
+		$option = $this->getSelectedOption()->getText();
 		$kingdom = $plugin->getPlayerKingdom($player);
 		$posArr = $plugin->getConfig()->getNested("Kingdoms.".$kingdom.".".$option,[]);
 		if(!empty($posArr)) {

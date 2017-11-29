@@ -8,6 +8,9 @@ author: "jasonwynn10"
 description: "The Core Plugin"
 depend:
  - EconomyAPI
+ - PurePerms
+ - PureChat
+ - PocketVote
 permissions:
  cr:
    default: op
@@ -21,5 +24,8 @@ permissions:
            default: true
            description: ""
          cr.command.kingdom:
+           default: true
+           description: ""
+         cr.command.vote:
            default: true
            description: ""
