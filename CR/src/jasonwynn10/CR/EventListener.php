@@ -66,7 +66,7 @@ class EventListener implements Listener {
 
 	/**
 	 * @priority HIGHEST
-	 * @ignoreCancelled true
+	 * @ignoreCancelled false
 	 *
 	 * @param PlayerChatEvent $event
 	 */
