@@ -6,6 +6,7 @@ use jasonwynn10\CR\Main;
 use pocketmine\IPlayer;
 
 abstract class KingdomProvider {
+	/** @var Main $plugin */
 	protected $plugin;
 
 	/**
@@ -102,48 +103,5 @@ abstract class KingdomProvider {
 	public function removeKingdomMoney(string $kingdom, float $money) : bool {
 		$current = $this->getKingdomMoney($kingdom);
 		return $this->setKingdomMoney($kingdom, $current - abs($money));
-	}
-
-	/**
-	 * @param string $kingdom
-	 *
-	 * @return array
-	 */
-	abstract public function getKingdomMembers(string $kingdom) : array;
-
-	/**
-	 * @param string $kingdom
-	 * @param array  $members
-	 *
-	 * @return bool
-	 */
-	abstract public function setKingdomMembers(string $kingdom, array $members) : bool;
-
-	/**
-	 * @param string  $kingdom
-	 * @param IPlayer $player
-	 *
-	 * @return bool
-	 */
-	public function addKingdomMember(string $kingdom, IPlayer $player) : bool {
-		$current = $this->getKingdomMembers($kingdom);
-		array_push($current, $player->getName());
-		return $this->setKingdomMembers($kingdom, $current);
-	}
-
-	/**
-	 * @param string  $kingdom
-	 * @param IPlayer $member
-	 *
-	 * @return bool
-	 */
-	public function removeKingdomMember(string $kingdom, IPlayer $member) : bool {
-		$current = $this->getKingdomMembers($kingdom);
-		$key = array_search($member->getName(), $current);
-		if($key !== false) {
-			unset($current[$key]);
-			return $this->setKingdomMembers($kingdom, $current);
-		}
-		return false;
 	}
 }

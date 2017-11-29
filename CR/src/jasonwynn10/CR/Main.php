@@ -73,10 +73,9 @@ class Main extends PluginBase {
 			new WarpMeCommand($this)
 		]);
 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new PowerAreaCheckTask($this),20*60*(int)$this->getConfig()->getNested("Power-Areas.Time-Per-Power", 2));
-		//TODO: power areas
 		//TODO: Custom Enchantments
 		//TODO: Crates
-		//TODO: Envoys??
+		//TODO: Envoys
 	}
 
 	/**
@@ -141,7 +140,7 @@ class Main extends PluginBase {
 	 * @return string[]
 	 */
 	public function getKingdomMembers(string $kingdom) : array {
-		return $this->kingdomProvider->getKingdomMembers($kingdom);
+		return array_keys($this->players->getAll(), $kingdom);
 	}
 
 	/**
