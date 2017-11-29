@@ -1,5 +1,6 @@
 Kingdoms:
   Dracosis:
+    Tax: 2 # in percents
     Castle:
       x: 0
       y: 0
@@ -11,6 +12,7 @@ Kingdoms:
       z: 0
       level: world
   Quay:
+    Tax: 2
     Castle:
       x: 0
       y: 0
@@ -22,6 +24,7 @@ Kingdoms:
       z: 0
       level: world
   Cordian:
+    Tax: 2
     Castle:
       x: 0
       y: 0

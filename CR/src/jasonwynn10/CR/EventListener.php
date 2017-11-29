@@ -4,6 +4,8 @@ namespace jasonwynn10\CR;
 
 use jasonwynn10\CR\form\KingdomSelectionForm;
 use jasonwynn10\CR\form\MoneyGrantRequestForm;
+use onebone\economyapi\EconomyAPI;
+use onebone\economyapi\event\money\AddMoneyEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 
@@ -36,6 +38,26 @@ class EventListener implements Listener {
 		if($this->plugin->getKingdomLeader($this->plugin->getPlayerKingdom($event->getPlayer())) === $event->getPlayer()->getName()) {
 			foreach($this->plugin->getMoneyRequestsInQueue() as $requester => $amount) {
 				$event->getPlayer()->sendForm(new MoneyGrantRequestForm($requester, $amount));
+			}
+		}
+	}
+
+	/**
+	 * @priority LOW
+	 * @ignoreCancelled true
+	 *
+	 * @param AddMoneyEvent $event
+	 */
+	public function onEarnMoney(AddMoneyEvent $event) {
+		if(!$event->isCancelled() and $event->getIssuer() !== "cr") {
+			$kingdom = $this->plugin->getPlayerKingdom($this->plugin->getServer()->getOfflinePlayer($event->getUsername())->getPlayer() ?? $this->plugin->getServer()->getOfflinePlayer($event->getUsername()));
+			if($kingdom !== null) {
+				$event->setCancelled();
+				$amount = $event->getAmount();
+				$percent = abs((int)$this->plugin->getConfig()->getNested("Kingdoms.".$kingdom.".Tax", 2)) / 100;
+				$economy = EconomyAPI::getInstance();
+				$economy->addMoney($kingdom, $percent * $amount, false, "cr");
+				$economy->addMoney($event->getUsername(), $amount - ($percent * $amount), false, "cr");
 			}
 		}
 	}
