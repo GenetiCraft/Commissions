@@ -13,6 +13,7 @@ use onebone\economyapi\EconomyAPI;
 use pocketmine\entity\Effect;
 use pocketmine\IPlayer;
 use pocketmine\item\Item;
+use pocketmine\math\AxisAlignedBB;
 use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
@@ -300,5 +301,21 @@ class Main extends PluginBase {
 		}
 		$effect->setDuration($duration)->setAmplifier($amplification);
 		return $effect;
+	}
+
+	public function checkPowerAreas() : void {
+		foreach($this->getConfig()->get("Power-Areas") as $areaData) {
+			$level = $this->getServer()->getLevelByName($areaData["level"]);
+			if($level === null)
+				continue;
+			$areaBB = new AxisAlignedBB(min($areaData["x1"], $areaData["x2"]),0, min($areaData["z1"], $areaData["z2"]), max($areaData["x1"], $areaData["x2"]), $level->getWorldHeight(), max($areaData["z1"], $areaData["z2"]));
+			foreach($this->getServer()->getOnlinePlayers() as $player) {
+				if($areaBB->isVectorInXZ($player)) {
+					$kingdom = $this->getPlayerKingdom($player);
+					$power = $this->kingdomProvider->getKingdomPower($kingdom);
+					$this->kingdomProvider->setKingdomPower($kingdom, $power + (int)$this->getConfig()->get("", 2));
+				}
+			}
+		}
 	}
 }
