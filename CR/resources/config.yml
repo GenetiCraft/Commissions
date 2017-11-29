@@ -35,3 +35,24 @@ Kingdoms:
       y: 0
       z: 0
       level: world
+Power-Areas:
+- x1: 0
+  x2: 0
+  z1: 0
+  z2: 0
+  level: world
+- x1: 0
+  x2: 0
+  z1: 0
+  z2: 0
+  level: world
+- x1: 0
+  x2: 0
+  z1: 0
+  z2: 0
+  level: world
+- x1: 0
+  x2: 0
+  z1: 0
+  z2: 0
+  level: world
