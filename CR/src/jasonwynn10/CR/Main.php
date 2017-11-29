@@ -9,6 +9,7 @@ use jasonwynn10\CR\command\VoteCommand;
 use jasonwynn10\CR\command\WarpMeCommand;
 use jasonwynn10\CR\provider\KingdomProvider;
 use jasonwynn10\CR\provider\SQLite3Provider;
+use jasonwynn10\CR\task\PowerAreaCheckTask;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\entity\Effect;
 use pocketmine\IPlayer;
@@ -71,6 +72,7 @@ class Main extends PluginBase {
 			new VoteCommand($this),
 			new WarpMeCommand($this)
 		]);
+		$this->getServer()->getScheduler()->scheduleRepeatingTask(new PowerAreaCheckTask($this),20*60*(int)$this->getConfig()->getNested("Power-Areas.Time-Per-Power", 2));
 		//TODO: power areas
 		//TODO: Custom Enchantments
 		//TODO: Crates
@@ -304,16 +306,16 @@ class Main extends PluginBase {
 	}
 
 	public function checkPowerAreas() : void {
-		foreach($this->getConfig()->get("Power-Areas") as $areaData) {
+		foreach($this->getConfig()->getNested("Power-Areas.Areas", []) as $areaData) {
 			$level = $this->getServer()->getLevelByName($areaData["level"]);
 			if($level === null)
-				continue;
+				continue; // skip if level isn't loaded
 			$areaBB = new AxisAlignedBB(min($areaData["x1"], $areaData["x2"]),0, min($areaData["z1"], $areaData["z2"]), max($areaData["x1"], $areaData["x2"]), $level->getWorldHeight(), max($areaData["z1"], $areaData["z2"]));
 			foreach($this->getServer()->getOnlinePlayers() as $player) {
 				if($areaBB->isVectorInXZ($player)) {
 					$kingdom = $this->getPlayerKingdom($player);
 					$power = $this->kingdomProvider->getKingdomPower($kingdom);
-					$this->kingdomProvider->setKingdomPower($kingdom, $power + (int)$this->getConfig()->get("", 2));
+					$this->kingdomProvider->setKingdomPower($kingdom, $power + (int)$this->getConfig()->getNested("Power-Areas.Power-Per-Time", 2));
 				}
 			}
 		}

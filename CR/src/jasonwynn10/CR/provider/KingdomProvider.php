@@ -28,6 +28,14 @@ abstract class KingdomProvider {
 
 	/**
 	 * @param string $kingdom
+	 * @param int    $power
+	 *
+	 * @return mixed
+	 */
+	abstract public function setKingdomPower(string $kingdom, int $power);
+
+	/**
+	 * @param string $kingdom
 	 *
 	 * @return float
 	 */

@@ -1,6 +1,6 @@
 Kingdoms:
   Dracosis:
-    Tax: 2 # in percents
+    Tax: 2 # percentage out of 100
     Castle:
       x: 0
       y: 0
@@ -12,7 +12,7 @@ Kingdoms:
       z: 0
       level: world
   Quay:
-    Tax: 2
+    Tax: 2 # percentage out of 100
     Castle:
       x: 0
       y: 0
@@ -24,7 +24,7 @@ Kingdoms:
       z: 0
       level: world
   Cordian:
-    Tax: 2
+    Tax: 2 # percentage out of 100
     Castle:
       x: 0
       y: 0
@@ -36,23 +36,26 @@ Kingdoms:
       z: 0
       level: world
 Power-Areas:
-- x1: 0
-  x2: 0
-  z1: 0
-  z2: 0
-  level: world
-- x1: 0
-  x2: 0
-  z1: 0
-  z2: 0
-  level: world
-- x1: 0
-  x2: 0
-  z1: 0
-  z2: 0
-  level: world
-- x1: 0
-  x2: 0
-  z1: 0
-  z2: 0
-  level: world
+  Areas:
+  - x1: 0
+    x2: 0
+    z1: 0
+    z2: 0
+    level: world
+  - x1: 0
+    x2: 0
+    z1: 0
+    z2: 0
+    level: world
+  - x1: 0
+    x2: 0
+    z1: 0
+    z2: 0
+    level: world
+  - x1: 0
+    x2: 0
+    z1: 0
+    z2: 0
+    level: world
+  Time-Per-Power: 2 # minutes per set power given to kingdom
+  Power-Per-Time: 2 # Power given every set amount of time
