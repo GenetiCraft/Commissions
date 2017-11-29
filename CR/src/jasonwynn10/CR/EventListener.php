@@ -7,11 +7,13 @@ use jasonwynn10\CR\form\MoneyGrantRequestForm;
 use onebone\economyapi\EconomyAPI;
 use onebone\economyapi\event\money\AddMoneyEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 
 class EventListener implements Listener {
 	/** @var Main $plugin */
 	private $plugin;
+
 	/**
 	 * EventListener constructor.
 	 *
@@ -60,5 +62,20 @@ class EventListener implements Listener {
 				$economy->addMoney($event->getUsername(), $amount - ($percent * $amount), false, "cr");
 			}
 		}
+	}
+
+	/**
+	 * @priority HIGHEST
+	 * @ignoreCancelled true
+	 *
+	 * @param PlayerChatEvent $event
+	 */
+	public function onPlayerChat(PlayerChatEvent $event) {
+		$player = $event->getPlayer();
+		$format = $event->getFormat();
+		$kingdom = $this->plugin->getPlayerKingdom($player);
+		$format = str_replace("{kingdom}", $kingdom, $format);
+		$format = str_replace("{isLeader}", $this->plugin->getKingdomLeader($kingdom) === $player->getName() ? "Leader" : "", $format);
+		$event->setFormat($format);
 	}
 }

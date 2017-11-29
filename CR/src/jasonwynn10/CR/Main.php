@@ -49,7 +49,6 @@ class Main extends PluginBase {
 	public function onEnable() : void {
 		$this->saveDefaultConfig();
 		self::$instance = $this;
-		$purePerms = self::getPurePerms();
 		/** @var PureChat $pureChat */
 		$pureChat = $this->getServer()->getPluginManager()->getPlugin("PureChat");
 		$this->players = new Config($this->getDataFolder()."players.yml",Config::YAML);
@@ -60,6 +59,7 @@ class Main extends PluginBase {
 		$this->kingdomProvider = new SQLite3Provider($this); //TODO: more providers with config option
 		$this->saveResource("VoteConfig.yml");
 		$voteRanks = $this->voteRanks = new Config($this->getDataFolder()."VoteConfig.yml", Config::YAML);
+		$purePerms = self::getPurePerms();
 		foreach($voteRanks->get("Ranks", []) as $rank => $data) {
 			$purePerms->addGroup($rank);
 			$group = $purePerms->getGroup($rank);
