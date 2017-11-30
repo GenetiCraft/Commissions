@@ -14,7 +14,7 @@ class KingdomWarpForm extends MenuForm {
 	 */
 	public function __construct() {
 		$options = [];
-		foreach(Main::getInstance()->getKingdomNames() as $kingdom => $locations) {
+		foreach(Main::getInstance()->getKingdomNames() as $kingdom) {
 			$options[] = new MenuOption($kingdom);
 		}
 		parent::__construct("Kingdom Warp Menu", "What kingdom do you want to warp to?", $options);

@@ -4,6 +4,7 @@ namespace jasonwynn10\CR;
 
 use jasonwynn10\CR\form\KingdomSelectionForm;
 use jasonwynn10\CR\form\MoneyGrantRequestForm;
+use jasonwynn10\CR\task\DelayedFormTask;
 use onebone\economyapi\EconomyAPI;
 use onebone\economyapi\event\money\AddMoneyEvent;
 use pocketmine\event\Listener;
@@ -26,20 +27,18 @@ class EventListener implements Listener {
 
 	/**
 	 * @priority MONITOR
-	 * @ignoreCancelled true
 	 *
 	 * @param PlayerJoinEvent $event
 	 */
 	public function onJoin(PlayerJoinEvent $event) {
-		if($event->isCancelled())
+		$kingdom = $this->plugin->getPlayerKingdom($event->getPlayer());
+		if($kingdom === null) {
+			$this->plugin->getServer()->getScheduler()->scheduleDelayedTask(new DelayedFormTask($this->plugin, new KingdomSelectionForm(), $event->getPlayer()), 20*3);
 			return;
-		if($this->plugin->getPlayerKingdom($event->getPlayer()) === null) {
-			$form = new KingdomSelectionForm();
-			$event->getPlayer()->sendForm($form);
 		}
-		if($this->plugin->getKingdomLeader($this->plugin->getPlayerKingdom($event->getPlayer())) === $event->getPlayer()->getName()) {
+		if($this->plugin->getKingdomLeader($kingdom) === $event->getPlayer()->getName()) {
 			foreach($this->plugin->getMoneyRequestsInQueue() as $requester => $amount) {
-				$event->getPlayer()->sendForm(new MoneyGrantRequestForm($requester, $amount));
+				$this->plugin->getServer()->getScheduler()->scheduleDelayedTask(new DelayedFormTask($this->plugin, new MoneyGrantRequestForm($requester, $amount), $event->getPlayer()), 20*60*3);
 			}
 		}
 	}
@@ -56,9 +55,9 @@ class EventListener implements Listener {
 			if($kingdom !== null) {
 				$event->setCancelled();
 				$amount = $event->getAmount();
-				$percent = abs((int)$this->plugin->getConfig()->getNested("Kingdoms.".$kingdom.".Tax", 2)) / 100;
+				$percent = abs((int)$this->plugin->getConfig()->getNested("Taxes.".$kingdom, 2)) / 100;
 				$economy = EconomyAPI::getInstance();
-				$economy->addMoney($kingdom, $percent * $amount, false, "cr");
+				$economy->addMoney($kingdom."Kingdom", $percent * $amount, false, "cr");
 				$economy->addMoney($event->getUsername(), $amount - ($percent * $amount), false, "cr");
 			}
 		}
@@ -72,9 +71,10 @@ class EventListener implements Listener {
 	 */
 	public function onPlayerChat(PlayerChatEvent $event) {
 		$player = $event->getPlayer();
-		$format = $event->getFormat();
 		$kingdom = $this->plugin->getPlayerKingdom($player);
-		$format = str_replace("{kingdom}", $kingdom, $format);
+		if($kingdom === null)
+			return;
+		$format = str_replace("{kingdom}", $kingdom, $event->getFormat());
 		$format = str_replace("{isLeader}", $this->plugin->getKingdomLeader($kingdom) === $player->getName() ? "Leader" : "", $format);
 		$event->setFormat($format);
 	}

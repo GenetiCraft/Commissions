@@ -5,8 +5,8 @@ namespace jasonwynn10\CR\form;
 use jasonwynn10\CR\Main;
 use pocketmine\form\CustomForm;
 use pocketmine\form\element\Dropdown;
-use pocketmine\form\element\Input;
 use pocketmine\form\element\Label;
+use pocketmine\form\element\Toggle;
 use pocketmine\form\Form;
 use pocketmine\IPlayer;
 use pocketmine\Player;
@@ -21,10 +21,10 @@ class KingdomInformationForm extends CustomForm {
 		$plugin = Main::getInstance();
 		$kingdom = $plugin->getPlayerKingdom($player);
 		$elements = [];
-		$elements[] = new Label("Kingdom Leader:\t".$plugin->getKingdomLeader($kingdom));
-		$elements[] = new Label("Kingdom Power:\t".$plugin->getKingdomPower($kingdom));
-		$elements[] = new Label("Kingdom Booty:\t".$plugin->getKingdomMoney($kingdom));
-		$elements[] = new Input("Request Money?");
+		$elements[] = new Label("Kingdom Leader:  ".$plugin->getKingdomLeader($kingdom));
+		$elements[] = new Label("Kingdom Power:  ".$plugin->getKingdomPower($kingdom));
+		$elements[] = new Label("Kingdom Booty:  ".$plugin->getKingdomMoney($kingdom));
+		$elements[] = new Toggle("Request Money?");
 		$elements[] = new Dropdown("Kingdom Members", $plugin->getKingdomMembers($kingdom));
 		parent::__construct("Kingdom Information", $elements);
 	}

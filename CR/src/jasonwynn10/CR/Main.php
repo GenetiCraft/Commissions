@@ -7,8 +7,10 @@ use _64FF00\PurePerms\PurePerms;
 use jasonwynn10\CR\command\KingdomCommand;
 use jasonwynn10\CR\command\VoteCommand;
 use jasonwynn10\CR\command\WarpMeCommand;
+use jasonwynn10\CR\form\MoneyGrantRequestForm;
 use jasonwynn10\CR\provider\KingdomProvider;
 use jasonwynn10\CR\provider\SQLite3Provider;
+use jasonwynn10\CR\task\DelayedFormTask;
 use jasonwynn10\CR\task\PowerAreaCheckTask;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\entity\Effect;
@@ -66,6 +68,7 @@ class Main extends PluginBase {
 			$chat = str_replace("{rank}", $rank, $data["Chat"]);
 			$pureChat->setOriginalChatFormat($group, $chat);
 		}
+		$this->kingdomProvider->init();
 		new EventListener($this);
 		$this->getServer()->getCommandMap()->registerAll("cr",[
 			new KingdomCommand($this),
@@ -150,6 +153,13 @@ class Main extends PluginBase {
 	 * @return bool
 	 */
 	public function addMoneyRequestToQueue(IPlayer $player, float $amount) : bool {
+		$kingdom = $this->getPlayerKingdom($player);
+		if($kingdom !== null) {
+			$leader = $this->getServer()->getPlayerExact($this->getKingdomLeader($kingdom));
+			if($leader !== null) {
+				$this->getServer()->getScheduler()->scheduleDelayedTask(new DelayedFormTask($this, new MoneyGrantRequestForm($player->getName(), $amount), $leader), 20*3);
+			}
+		}
 		$this->moneyRequestQueue->set($player->getName(), $amount); //TODO: what if player submits form 2x when leader is offline?
 		return $this->moneyRequestQueue->save(true);
 	}
@@ -159,6 +169,13 @@ class Main extends PluginBase {
 	 */
 	public function getMoneyRequestsInQueue() : array {
 		return $this->moneyRequestQueue->getAll();
+	}
+
+	/**
+	 * @return Config
+	 */
+	public function getMoneyRequestQueue() : Config {
+		return $this->moneyRequestQueue;
 	}
 
 	/**

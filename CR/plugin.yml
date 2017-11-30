@@ -17,7 +17,7 @@ permissions:
    description: ""
    children:
      cr.command:
-       default: op
+       default: true
        description: ""
        children:
          cr.command.warpme:

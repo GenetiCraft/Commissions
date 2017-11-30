@@ -34,9 +34,13 @@ class MoneyGrantRequestForm extends ModalForm {
 	public function onSubmit(Player $player) : ?Form {
 		if($this->getChoice()) {
 			$economy = EconomyAPI::getInstance();
-			$return = $economy->reduceMoney(Main::getInstance()->getPlayerKingdom($player), $this->amount, false, "CR");
-			if($return === EconomyAPI::RET_SUCCESS)
+			$main = Main::getInstance();
+			$return = $economy->reduceMoney($main->getPlayerKingdom($player)."Kingdom", $this->amount, false, "CR");
+			if($return === EconomyAPI::RET_SUCCESS) {
 				$economy->addMoney($this->requester, $this->amount, false, "CR");
+				$main->getMoneyRequestQueue()->remove($this->requester);
+				$main->getMoneyRequestQueue()->save(true);
+			}
 		}
 		return null;
 	}

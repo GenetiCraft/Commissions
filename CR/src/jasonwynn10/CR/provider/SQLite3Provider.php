@@ -19,11 +19,18 @@ class SQLite3Provider extends KingdomProvider {
 	public function __construct(Main $plugin) {
 		parent::__construct($plugin);
 		$db = $this->db = new \SQLite3($plugin->getDataFolder()."kingdoms.db");
-		$db->exec("CREATE TABLE IF NOT EXISTS kingdoms (kingdom TEXT PRIMARY KEY, leader TEXT, power INTEGER, money FLOAT);");
+		$db->exec("CREATE TABLE IF NOT EXISTS kingdoms (kingdom TEXT PRIMARY KEY NOT NULL, leader TEXT, power INTEGER, money FLOAT);");
 		$this->sqlGetKingdom = $db->prepare("SELECT * FROM kingdoms WHERE kingdom = :kingdom;");
 		$this->sqlSetKingdomLeader = $db->prepare("UPDATE kingdoms SET leader = :leader WHERE kingdom = :kingdom;");
 		$this->sqlSetKingdomPower = $db->prepare("UPDATE kingdoms SET power = :power WHERE kingdom = :kingdom;");
 		$this->sqlSetKingdomMoney = $db->prepare("UPDATE kingdoms SET money = :money WHERE kingdom = :kingdom;");
+	}
+
+	public function init() : void {
+		foreach($this->plugin->getKingdomNames() as $kingdom) {
+			$this->db->query("INSERT OR IGNORE INTO kingdoms (kingdom, leader, power, money) VALUES ('{$kingdom}', 'blank', 0, 1000.00);");
+		}
+		$this->db->query("UPDATE kingdoms SET leader = 'jasonwynn10' WHERE kingdom = 'Dracosis';"); //TODO remove after tests
 	}
 
 	/**

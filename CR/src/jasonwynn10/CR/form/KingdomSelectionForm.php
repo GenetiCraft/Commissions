@@ -14,7 +14,7 @@ class KingdomSelectionForm extends MenuForm {
 	 */
 	public function __construct() {
 		$options = [];
-		foreach(Main::getInstance()->getKingdomNames() as $kingdom => $locations) {
+		foreach(Main::getInstance()->getKingdomNames() as $kingdom) {
 			$options[] = new MenuOption($kingdom);
 		}
 		parent::__construct("Kingdom Selection", "Choose a kingdom to start!", $options);

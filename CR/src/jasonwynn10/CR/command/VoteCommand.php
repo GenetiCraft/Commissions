@@ -26,7 +26,7 @@ class VoteCommand extends PluginCommand {
 	 * @return bool|mixed
 	 */
 	public function execute(CommandSender $sender, string $commandLabel, array $args) {
-		if(parent::execute($sender, $commandLabel, $args)) {
+		if($this->testPermission($sender)) {
 			PocketVote::getPlugin()->getVoteManager()->expireVotes();
 			if($sender instanceof Player and PocketVote::getPlugin()->getVoteManager()->hasVotes($sender->getName())) {
 				/** @noinspection PhpParamsInspection */

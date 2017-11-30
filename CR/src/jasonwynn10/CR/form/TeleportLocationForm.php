@@ -41,9 +41,11 @@ class TeleportLocationForm extends MenuForm {
 		$plugin = Main::getInstance();
 		$option = $this->getSelectedOption()->getText();
 		$kingdom = $plugin->getPlayerKingdom($player);
-		$posArr = $plugin->getConfig()->getNested("Kingdoms.".$kingdom.".".$option,[]);
+		$posArr = $plugin->getConfig()->getNested("Kingdoms.".$kingdom.".".$option, []);
 		if(!empty($posArr)) {
-			$level = $player->getServer()->getLevelByName($posArr["level"]); //TODO: check null
+			$level = $player->getServer()->getLevelByName($posArr["level"]);
+			if($level === null)
+				return new self($kingdom);
 			$player->teleport(new Position($posArr["x"], $posArr["y"], $posArr["z"], $level));
 			return null;
 		}else{

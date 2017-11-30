@@ -18,6 +18,8 @@ abstract class KingdomProvider {
 		$this->plugin = $plugin;
 	}
 
+	abstract public function init() : void;
+
 	/**
 	 * @param string $kingdom
 	 *

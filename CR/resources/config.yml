@@ -1,40 +1,41 @@
 Kingdoms:
   Dracosis:
-    Tax: 2 # percentage out of 100
     Castle:
       x: 0
-      y: 0
+      "y": 0
       z: 0
       level: world
     Village:
       x: 0
-      y: 0
+      "y": 0
       z: 0
       level: world
   Quay:
-    Tax: 2 # percentage out of 100
     Castle:
       x: 0
-      y: 0
+      "y": 0
       z: 0
       level: world
     Village:
       x: 0
-      y: 0
+      "y": 0
       z: 0
       level: world
   Cordian:
-    Tax: 2 # percentage out of 100
     Castle:
       x: 0
-      y: 0
+      "y": 0
       z: 0
       level: world
     Village:
       x: 0
-      y: 0
+      "y": 0
       z: 0
       level: world
+Taxes: # Taxes are percentage values out of 100
+  Dracosis: 2
+  Quay: 2
+  Cordian: 2
 Power-Areas:
   Areas:
   - x1: 0

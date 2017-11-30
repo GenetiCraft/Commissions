@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace jasonwynn10\CR\form;
 
 use jasonwynn10\CR\Main;
+use onebone\economyapi\EconomyAPI;
 use pocketmine\form\CustomForm;
 use pocketmine\form\element\Slider;
 use pocketmine\form\Form;
@@ -17,7 +18,7 @@ class MoneyRequestForm extends CustomForm {
 	 */
 	public function __construct(IPlayer $player) {
 		$elements = [];
-		$elements[] = new Slider("Requested Amount",0.00,INT32_MAX+0.00,5.00, 10.00);
+		$elements[] = new Slider("Requested Amount",0.00, (float) EconomyAPI::getInstance()->myMoney(Main::getInstance()->getPlayerKingdom($player)."Kingdom"),5.00, 10.00);
 		parent::__construct("Request Money", $elements);
 	}
 
