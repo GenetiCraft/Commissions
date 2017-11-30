@@ -10,6 +10,7 @@ depend:
  - EconomyAPI
  - PurePerms
  - PureChat
+loadbefore:
  - PocketVote
 permissions:
  cr:
@@ -17,7 +18,7 @@ permissions:
    description: ""
    children:
      cr.command:
-       default: true
+       default: op
        description: ""
        children:
          cr.command.warpme:

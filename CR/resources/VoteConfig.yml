@@ -3,51 +3,46 @@ RankTimeout: 24
 Ranks:
   Knight:
     Description: ""
-    Chat: "&3&l{prefix}&e[{rank}]&f&r {display_name} &7> {msg}"
-    Image-Link: ""
+    Chat: "&3&l{kingdom}&e[{rank}]&f&r {display_name} &7> {msg}"
     Effects:
      - "speed 1 5"
      - ""
     Items:
-     - "diamond_helmet 1 {ench:[{id:0s,lvl:2s}]}"
-     - ""
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
   Farmer:
     Description: ""
-    Chat: "&3&l{prefix}&e[{rank}]&f&r {display_name} &7> {msg}"
-    Image-Link: ""
+    Chat: "&3&l{kingdom}&e[{rank}]&f&r {display_name} &7> {msg}"
     Effects:
      - ""
      - ""
     Items:
-     - ""
-     - ""
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
   Gladiator:
     Description: ""
-    Chat: "&3&l{prefix}&e[{rank}]&f&r {display_name} &7> {msg}"
-    Image-Link: ""
+    Chat: "&3&l{kingdom}&e[{rank}]&f&r {display_name} &7> {msg}"
     Effects:
      - ""
      - ""
     Items:
-     - ""
-     - ""
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
   Horseback:
     Description: ""
-    Chat: "&3&l{prefix}&e[{rank}]&f&r {display_name} &7> {msg}"
-    Image-Link: ""
+    Chat: "&3&l{kingdom}&e[{rank}]&f&r {display_name} &7> {msg}"
     Effects:
      - ""
      - ""
     Items:
-     - ""
-     - ""
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
   Mage:
     Description: ""
-    Chat: "&3&l{prefix}&e[{rank}]&f&r {display_name} &7> {msg}"
-    Image-Link: ""
+    Chat: "&3&l{kingdom}&e[{rank}]&f&r {display_name} &7> {msg}"
     Effects:
      - ""
      - ""
     Items:
-     - ""
-     - ""
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
+     - stick 1 {display:{Name:"§eTHE POWER"},ench:[{id:12s,lvl:50s}]}
