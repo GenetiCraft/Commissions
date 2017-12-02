@@ -8,8 +8,6 @@ use jasonwynn10\CR\command\KingdomCommand;
 use jasonwynn10\CR\command\VoteCommand;
 use jasonwynn10\CR\command\WarpMeCommand;
 use jasonwynn10\CR\form\MoneyGrantRequestForm;
-use jasonwynn10\CR\provider\KingdomProvider;
-use jasonwynn10\CR\provider\SQLite3Provider;
 use jasonwynn10\CR\task\DelayedFormTask;
 use jasonwynn10\CR\task\PowerAreaCheckTask;
 use onebone\economyapi\EconomyAPI;
@@ -24,13 +22,12 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
 
 class Main extends PluginBase {
+	/** @var Main $instance */
 	private static $instance;
 	/** @var Config $players */
 	private $players;
 	/** @var Config $moneyRequestQueue */
 	private $moneyRequestQueue;
-	/** @var KingdomProvider $kingdomProvider */
-	private $kingdomProvider;
 	/** @var Config $voteRanks */
 	private $voteRanks;
 
@@ -45,22 +42,27 @@ class Main extends PluginBase {
 	 * @return PurePerms|null|\pocketmine\plugin\Plugin
 	 */
 	public static function getPurePerms() : PurePerms {
-		return self::getInstance()->getServer()->getPluginManager()->getPlugin("PurePerms");
+		return self::$instance->getServer()->getPluginManager()->getPlugin("PurePerms");
 	}
 
 	public function onEnable() : void {
-		$this->saveDefaultConfig();
 		self::$instance = $this;
+		$this->getLogger()->debug("Plugin instance set!");
+
+		$this->saveDefaultConfig();
 		/** @var PureChat $pureChat */
 		$pureChat = $this->getServer()->getPluginManager()->getPlugin("PureChat");
 		$this->players = new Config($this->getDataFolder()."players.yml",Config::YAML);
-		foreach($this->getKingdomNames() as $kingdom) {
-			EconomyAPI::getInstance()->createAccount($kingdom."Kingdom", 1000.00,true);
-		}
 		$this->moneyRequestQueue = new Config($this->getDataFolder()."MoneyRequests.json", Config::JSON);
-		$this->kingdomProvider = new SQLite3Provider($this); //TODO: more providers with config option
 		$this->saveResource("VoteConfig.yml");
 		$voteRanks = $this->voteRanks = new Config($this->getDataFolder()."VoteConfig.yml", Config::YAML);
+		$this->getLogger()->debug("All configs saved/loaded!");
+
+		foreach($this->getKingdomNames() as $kingdom) {
+			EconomyAPI::getInstance()->createAccount($kingdom."Kingdom", 1000.00, true);
+		}
+		$this->getLogger()->debug("Kingdom economy accounts created/loaded!");
+
 		$purePerms = self::getPurePerms();
 		foreach($voteRanks->get("Ranks", []) as $rank => $data) {
 			$purePerms->addGroup($rank);
@@ -68,14 +70,20 @@ class Main extends PluginBase {
 			$chat = str_replace("{rank}", $rank, $data["Chat"]);
 			$pureChat->setOriginalChatFormat($group, $chat);
 		}
-		$this->kingdomProvider->init();
+		$this->getLogger()->debug("PurePerms and PureChat ranks created/loaded!");
+
 		new EventListener($this);
+
 		$this->getServer()->getCommandMap()->registerAll("cr",[
 			new KingdomCommand($this),
 			new VoteCommand($this),
 			new WarpMeCommand($this)
 		]);
+		$this->getLogger()->debug("Commands Registered!");
+
 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new PowerAreaCheckTask($this),20*60*(int)$this->getConfig()->getNested("Power-Areas.Time-Per-Power", 2));
+		$this->getLogger()->debug("Power Area Check Task Scheduled!");
+
 		//TODO: Custom Enchantments
 		//TODO: Crates
 		//TODO: Envoys
@@ -116,7 +124,7 @@ class Main extends PluginBase {
 	 * @return string
 	 */
 	public function getKingdomLeader(string $kingdom) : string {
-		return $this->kingdomProvider->getKingdomLeader($kingdom);
+		return $this->getConfig()->getNested("Leaders.".$kingdom, "blank");
 	}
 
 	/**
@@ -125,7 +133,7 @@ class Main extends PluginBase {
 	 * @return int
 	 */
 	public function getKingdomPower(string $kingdom) : int {
-		return $this->kingdomProvider->getKingdomPower($kingdom);
+		return $this->getConfig()->getNested("Power".$kingdom, 0);
 	}
 
 	/**
@@ -134,7 +142,7 @@ class Main extends PluginBase {
 	 * @return float
 	 */
 	public function getKingdomMoney(string $kingdom) : float {
-		return $this->kingdomProvider->getKingdomMoney($kingdom);
+		return EconomyAPI::getInstance()->myMoney($kingdom."Kingdom");
 	}
 
 	/**
@@ -209,7 +217,7 @@ class Main extends PluginBase {
 	 */
 	public static function givePlayerRank(Player $player, string $rank) {
 		$purePerms = self::getPurePerms();
-		$main = self::getInstance();
+		$main = self::$instance;
 		$purePerms->setGroup($player, $purePerms->getGroup($rank), null, time() + ($main->voteRanks->get("Rank-Timeout", 24) * 60 * 60));
 		$items = $main->getVoteRankItems($rank);
 		$effects = $main->getVoteRankEffects($rank);
@@ -219,6 +227,7 @@ class Main extends PluginBase {
 		foreach($effects as $effectString) {
 			$player->addEffect(self::getEffectFromString($effectString));
 		}
+		$main->getLogger()->debug("Rank ".$rank." given to ".$player->getName());
 	}
 
 	/**
@@ -277,7 +286,7 @@ class Main extends PluginBase {
 				$exception = $ex;
 			}
 			if(!$tags instanceof CompoundTag or $exception !== null) {
-				self::getInstance()->getLogger()->error("Invalid NBT tag!");
+				self::$instance->getLogger()->error("Invalid NBT tag!");
 			}
 			$item->setNamedTag($tags);
 		}
@@ -330,8 +339,9 @@ class Main extends PluginBase {
 			foreach($this->getServer()->getOnlinePlayers() as $player) {
 				if($areaBB->isVectorInXZ($player)) {
 					$kingdom = $this->getPlayerKingdom($player);
-					$power = $this->kingdomProvider->getKingdomPower($kingdom);
-					$this->kingdomProvider->setKingdomPower($kingdom, $power + (int)$this->getConfig()->getNested("Power-Areas.Power-Per-Time", 2));
+					$power = $this->getConfig()->getNested("Power.".$kingdom, 0);
+					$this->getConfig()->setNested("Power.".$kingdom, $power + (int)$this->getConfig()->getNested("Power-Areas.Power-Per-Time", 2));
+					$this->getConfig()->save(true);
 				}
 			}
 		}

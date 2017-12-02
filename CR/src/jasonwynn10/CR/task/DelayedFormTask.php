@@ -33,6 +33,7 @@ class DelayedFormTask extends PluginTask {
 		$player = $this->getOwner()->getServer()->getPlayerExact($this->player);
 		if($player !== null) {
 			$player->sendForm($this->form);
+			$this->getOwner()->getLogger()->debug(get_class($this)." sent to Player ".$player->getName());
 		}
 	}
 }

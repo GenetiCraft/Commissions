@@ -2,40 +2,48 @@ Kingdoms:
   Dracosis:
     Castle:
       x: 0
-      "y": 0
+      "y": 100
       z: 0
       level: world
     Village:
       x: 0
-      "y": 0
+      "y": 100
       z: 0
       level: world
   Quay:
     Castle:
       x: 0
-      "y": 0
+      "y": 100
       z: 0
       level: world
     Village:
       x: 0
-      "y": 0
+      "y": 100
       z: 0
       level: world
   Cordian:
     Castle:
       x: 0
-      "y": 0
+      "y": 100
       z: 0
       level: world
     Village:
       x: 0
-      "y": 0
+      "y": 100
       z: 0
       level: world
 Taxes: # Taxes are percentage values out of 100
   Dracosis: 2
   Quay: 2
   Cordian: 2
+Leaders:
+  Dracosis: "David2020xD"
+  Quay: "xXDismalAngelXx"
+  Cordian: "MistCraftPlays"
+Power:
+  Dracosis: 0
+  Quay: 0
+  Cordian: 0
 Power-Areas:
   Areas:
   - x1: 0

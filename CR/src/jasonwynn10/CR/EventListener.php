@@ -23,6 +23,7 @@ class EventListener implements Listener {
 	public function __construct(Main $plugin) {
 		$plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
 		$this->plugin = $plugin;
+		$plugin->getLogger()->debug("Event Listener Registered!");
 	}
 
 	/**
@@ -59,6 +60,7 @@ class EventListener implements Listener {
 				$economy = EconomyAPI::getInstance();
 				$economy->addMoney($kingdom."Kingdom", $percent * $amount, false, "cr");
 				$economy->addMoney($event->getUsername(), $amount - ($percent * $amount), false, "cr");
+				$this->plugin->getLogger()->debug($event->getUsername()." has been taxed!");
 			}
 		}
 	}

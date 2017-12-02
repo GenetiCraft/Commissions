@@ -19,7 +19,7 @@ class KingdomInformationForm extends CustomForm {
 	 */
 	public function __construct(IPlayer $player) {
 		$plugin = Main::getInstance();
-		$kingdom = $plugin->getPlayerKingdom($player);
+		$kingdom = $plugin->getPlayerKingdom($player) ?? ""; // TODO: remove hack
 		$elements = [];
 		$elements[] = new Label("Kingdom Leader:  ".$plugin->getKingdomLeader($kingdom));
 		$elements[] = new Label("Kingdom Power:  ".$plugin->getKingdomPower($kingdom));
