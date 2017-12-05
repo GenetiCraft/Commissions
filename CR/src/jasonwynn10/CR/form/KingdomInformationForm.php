@@ -25,7 +25,8 @@ class KingdomInformationForm extends CustomForm {
 		$elements[] = new Label("Kingdom Power:  ".$plugin->getKingdomPower($kingdom));
 		$elements[] = new Label("Kingdom Booty:  ".$plugin->getKingdomMoney($kingdom));
 		$elements[] = new Toggle("Request Money?");
-		$elements[] = new Dropdown("Kingdom Members", $plugin->getKingdomMembers($kingdom));
+		$members = $plugin->getKingdomMembers($kingdom);
+		$elements[] = new Dropdown("Kingdom Members", !empty($members) ? $members : ["No one is in this kingdom! Tell a Staff member!"]);
 		parent::__construct("Kingdom Information", $elements);
 	}
 

@@ -10,12 +10,16 @@ use pocketmine\level\Position;
 use pocketmine\Player;
 
 class TeleportLocationForm extends MenuForm {
+	/** @var bool $allowClose */
+	private $allowClose;
 	/**
 	 * StartingLocationForm constructor.
 	 *
 	 * @param string $kingdom
+	 * @param bool   $allowClose
 	 */
-	public function __construct(string $kingdom) {
+	public function __construct(string $kingdom, bool $allowClose = true) {
+		$this->allowClose = $allowClose;
 		$options = [];
 		foreach(Main::getInstance()->getConfig()->getNested("Kingdoms.".$kingdom, []) as $name => $posArr) {
 			$options[] = new MenuOption($name);
@@ -29,7 +33,7 @@ class TeleportLocationForm extends MenuForm {
 	 * @return null|Form
 	 */
 	public function onClose(Player $player) : ?Form {
-		return new self(Main::getInstance()->getPlayerKingdom($player));
+		return $this->allowClose ? null : new self(Main::getInstance()->getPlayerKingdom($player), false);
 	}
 
 	/**
@@ -44,12 +48,15 @@ class TeleportLocationForm extends MenuForm {
 		$posArr = $plugin->getConfig()->getNested("Kingdoms.".$kingdom.".".$option, []);
 		if(!empty($posArr)) {
 			$level = $player->getServer()->getLevelByName($posArr["level"]);
-			if($level === null)
-				return new self($kingdom);
+			if($level === null) {
+				Main::getInstance()->getLogger()->debug("Invalid Level '{$posArr["level"]}'!");
+				return new self($kingdom, $this->allowClose);
+			}
 			$player->teleport(new Position($posArr["x"], $posArr["y"], $posArr["z"], $level));
 			return null;
 		}else{
-			return new self($kingdom);
+			Main::getInstance()->getLogger()->debug("Empty Teleport Array!");
+			return new self($kingdom, $this->allowClose);
 		}
 	}
 }

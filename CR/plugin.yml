@@ -1,6 +1,6 @@
 name: CR
 main: jasonwynn10\CR\Main
-version: 0.2.1
+version: 0.3.0
 api:
  - 3.0.0
  - 3.0.0-ALPHA9
@@ -12,6 +12,8 @@ depend:
  - PureChat
 loadbefore:
  - PocketVote
+mcpe-protocol:
+ - 141
 permissions:
  cr:
    default: op

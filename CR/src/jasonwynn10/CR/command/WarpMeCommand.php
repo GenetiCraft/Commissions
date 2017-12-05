@@ -4,7 +4,6 @@ namespace jasonwynn10\CR\command;
 
 use jasonwynn10\CR\form\KingdomWarpForm;
 use jasonwynn10\CR\Main;
-use jasonwynn10\CR\task\DelayedFormTask;
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
 use pocketmine\Player;
@@ -33,7 +32,7 @@ class WarpMeCommand extends PluginCommand {
 		if($this->testPermission($sender)) {
 			if($sender instanceof Player) {
 				/** @noinspection PhpParamsInspection */
-				$this->getPlugin()->getServer()->getScheduler()->scheduleDelayedTask(new DelayedFormTask($this->getPlugin(), new KingdomWarpForm(), $sender), 20*3);
+				Main::sendPlayerDelayedForm($sender, new KingdomWarpForm());
 			}
 			return true;
 		}

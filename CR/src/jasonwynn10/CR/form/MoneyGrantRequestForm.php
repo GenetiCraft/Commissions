@@ -39,7 +39,7 @@ class MoneyGrantRequestForm extends ModalForm {
 			if($return === EconomyAPI::RET_SUCCESS) {
 				$economy->addMoney($this->requester, $this->amount, false, "CR");
 				$main->getMoneyRequestQueue()->remove($this->requester);
-				$main->getMoneyRequestQueue()->save(true);
+				$main->getMoneyRequestQueue()->save();
 			}
 		}
 		return null;

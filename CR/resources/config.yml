@@ -32,18 +32,6 @@ Kingdoms:
       "y": 100
       z: 0
       level: world
-Taxes: # Taxes are percentage values out of 100
-  Dracosis: 2
-  Quay: 2
-  Cordian: 2
-Leaders:
-  Dracosis: "David2020xD"
-  Quay: "xXDismalAngelXx"
-  Cordian: "MistCraftPlays"
-Power:
-  Dracosis: 0
-  Quay: 0
-  Cordian: 0
 Power-Areas:
   Areas:
   - x1: 0
@@ -68,3 +56,15 @@ Power-Areas:
     level: world
   Time-Per-Power: 2 # minutes per set power given to kingdom
   Power-Per-Time: 2 # Power given every set amount of time
+Taxes: # Taxes are percentage values out of 100
+  Dracosis: 2
+  Quay: 2
+  Cordian: 2
+Leaders:
+  Dracosis: "David2020xD"
+  Quay: "xXDismalAngelXx"
+  Cordian: "MistCraftPlays"
+Power:
+  Dracosis: 0
+  Quay: 0
+  Cordian: 0

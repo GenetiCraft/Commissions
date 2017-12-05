@@ -4,16 +4,22 @@ namespace jasonwynn10\CR;
 
 use jasonwynn10\CR\form\KingdomSelectionForm;
 use jasonwynn10\CR\form\MoneyGrantRequestForm;
-use jasonwynn10\CR\task\DelayedFormTask;
+use jasonwynn10\CR\task\FormsRepairTask;
 use onebone\economyapi\EconomyAPI;
 use onebone\economyapi\event\money\AddMoneyEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\event\server\DataPacketSendEvent;
+use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
+use pocketmine\network\mcpe\protocol\ModalFormResponsePacket;
 
 class EventListener implements Listener {
 	/** @var Main $plugin */
 	private $plugin;
+	/** @var int[] $sentForms */
+	public static $sentForms = [];
 
 	/**
 	 * EventListener constructor.
@@ -34,12 +40,12 @@ class EventListener implements Listener {
 	public function onJoin(PlayerJoinEvent $event) {
 		$kingdom = $this->plugin->getPlayerKingdom($event->getPlayer());
 		if($kingdom === null) {
-			$this->plugin->getServer()->getScheduler()->scheduleDelayedTask(new DelayedFormTask($this->plugin, new KingdomSelectionForm(), $event->getPlayer()), 20*3);
+			Main::sendPlayerDelayedForm($event->getPlayer(), new KingdomSelectionForm());
 			return;
 		}
 		if($this->plugin->getKingdomLeader($kingdom) === $event->getPlayer()->getName()) {
 			foreach($this->plugin->getMoneyRequestsInQueue() as $requester => $amount) {
-				$this->plugin->getServer()->getScheduler()->scheduleDelayedTask(new DelayedFormTask($this->plugin, new MoneyGrantRequestForm($requester, $amount), $event->getPlayer()), 20*60*3);
+				Main::sendPlayerDelayedForm($event->getPlayer(), new MoneyGrantRequestForm($requester, $amount));
 			}
 		}
 	}
@@ -79,5 +85,46 @@ class EventListener implements Listener {
 		$format = str_replace("{kingdom}", $kingdom, $event->getFormat());
 		$format = str_replace("{isLeader}", $this->plugin->getKingdomLeader($kingdom) === $player->getName() ? "Leader" : "", $format);
 		$event->setFormat($format);
+	}
+
+	/**
+	 * @priority MONITOR
+	 * @ignoreCancelled true
+	 *
+	 * @param DataPacketSendEvent $event
+	 */
+	public function onDataPacketSend(DataPacketSendEvent $event) {
+		$packet = $event->getPacket();
+		if($packet instanceof ModalFormRequestPacket) {
+			$data = json_decode($packet->formData);
+			if(in_array($data->title, [
+				"Kingdom Information",
+				"Kingdom Selection",
+				"Kingdom Warp Menu",
+				"Request Money",
+				"Starting Location",
+				"Vote",
+				"Rank Information"
+			])) {
+				self::$sentForms[] = $packet->formId;
+				$this->plugin->getServer()->getScheduler()->scheduleDelayedTask(new FormsRepairTask($this->plugin, $event->getPlayer()->getName(), $packet), 20*60); //TODO: optimize timing
+			}elseif(strpos($data["title"], "Money Requested from")) {
+				self::$sentForms[] = $packet->formId;
+				$this->plugin->getServer()->getScheduler()->scheduleDelayedTask(new FormsRepairTask($this->plugin, $event->getPlayer()->getName(), $packet), 20*60); //TODO: optimize timing
+			}
+		}
+	}
+
+	/**
+	 * @priority MONITOR
+	 * @ignoreCancelled true
+	 *
+	 * @param DataPacketReceiveEvent $event
+	 */
+	public function onDataPacketReceive(DataPacketReceiveEvent $event) { //TODO: find a better method than Receive event
+		$packet = $event->getPacket();
+		if($packet instanceof ModalFormResponsePacket and in_array($packet->formId, self::$sentForms)) {
+			unset(self::$sentForms[array_search($packet->formId, self::$sentForms)]);
+		}
 	}
 }

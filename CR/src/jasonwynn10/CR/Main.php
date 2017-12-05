@@ -12,6 +12,7 @@ use jasonwynn10\CR\task\DelayedFormTask;
 use jasonwynn10\CR\task\PowerAreaCheckTask;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\entity\Effect;
+use pocketmine\form\Form;
 use pocketmine\IPlayer;
 use pocketmine\item\Item;
 use pocketmine\math\AxisAlignedBB;
@@ -19,6 +20,7 @@ use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
+use pocketmine\Server;
 use pocketmine\utils\Config;
 
 class Main extends PluginBase {
@@ -60,7 +62,9 @@ class Main extends PluginBase {
 
 		foreach($this->getKingdomNames() as $kingdom) {
 			EconomyAPI::getInstance()->createAccount($kingdom."Kingdom", 1000.00, true);
+			$this->players->set($this->getConfig()->getNested("Leaders.".$kingdom, "blank"), $kingdom);
 		}
+		$this->players->save();
 		$this->getLogger()->debug("Kingdom economy accounts created/loaded!");
 
 		$purePerms = self::getPurePerms();
@@ -104,7 +108,7 @@ class Main extends PluginBase {
 	 */
 	public function setPlayerKingdom(IPlayer $player, string $kingdom) : bool {
 		$this->players->set($player->getName(), $kingdom);
-		return $this->players->save(true);
+		return $this->players->save();
 	}
 
 	/**
@@ -133,7 +137,7 @@ class Main extends PluginBase {
 	 * @return int
 	 */
 	public function getKingdomPower(string $kingdom) : int {
-		return $this->getConfig()->getNested("Power".$kingdom, 0);
+		return $this->getConfig()->getNested("Power.".$kingdom, 0);
 	}
 
 	/**
@@ -142,7 +146,8 @@ class Main extends PluginBase {
 	 * @return float
 	 */
 	public function getKingdomMoney(string $kingdom) : float {
-		return EconomyAPI::getInstance()->myMoney($kingdom."Kingdom");
+		$return = EconomyAPI::getInstance()->myMoney($kingdom."Kingdom");
+		return $return !== false ? $return : 0;
 	}
 
 	/**
@@ -165,11 +170,11 @@ class Main extends PluginBase {
 		if($kingdom !== null) {
 			$leader = $this->getServer()->getPlayerExact($this->getKingdomLeader($kingdom));
 			if($leader !== null) {
-				$this->getServer()->getScheduler()->scheduleDelayedTask(new DelayedFormTask($this, new MoneyGrantRequestForm($player->getName(), $amount), $leader), 20*3);
+				Main::sendPlayerDelayedForm($leader, new MoneyGrantRequestForm($player->getName(), $amount));
 			}
 		}
 		$this->moneyRequestQueue->set($player->getName(), $amount); //TODO: what if player submits form 2x when leader is offline?
-		return $this->moneyRequestQueue->save(true);
+		return $this->moneyRequestQueue->save();
 	}
 
 	/**
@@ -341,9 +346,20 @@ class Main extends PluginBase {
 					$kingdom = $this->getPlayerKingdom($player);
 					$power = $this->getConfig()->getNested("Power.".$kingdom, 0);
 					$this->getConfig()->setNested("Power.".$kingdom, $power + (int)$this->getConfig()->getNested("Power-Areas.Power-Per-Time", 2));
-					$this->getConfig()->save(true);
+					$this->getConfig()->save();
 				}
 			}
 		}
+	}
+
+	/**
+	 * @param Player   $player
+	 * @param Form     $form
+	 * @param int      $delay Default is 1 Tick
+	 * @param int|null $timeout
+	 */
+	public static function sendPlayerDelayedForm(Player $player, Form $form, int $delay = 1, ?int $timeout = null) : void {
+		Server::getInstance()->getScheduler()->scheduleDelayedTask(new DelayedFormTask(self::$instance, $form, $player), $delay);
+
 	}
 }
