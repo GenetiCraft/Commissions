@@ -336,16 +336,52 @@ class Main extends PluginBase {
 	}
 
 	public function checkPowerAreas() : void {
-		foreach($this->getConfig()->getNested("Power-Areas.Areas", []) as $areaData) {
+		foreach($this->getConfig()->getNested("Power-Areas.Areas", []) as $areaKey => $areaData) {
 			$level = $this->getServer()->getLevelByName($areaData["level"]);
 			if($level === null)
 				continue; // skip if level isn't loaded
 			$areaBB = new AxisAlignedBB(min($areaData["x1"], $areaData["x2"]),0, min($areaData["z1"], $areaData["z2"]), max($areaData["x1"], $areaData["x2"]), $level->getWorldHeight(), max($areaData["z1"], $areaData["z2"]));
+			$inArea = [];
 			foreach($this->getServer()->getOnlinePlayers() as $player) {
 				if($areaBB->isVectorInXZ($player)) {
-					$kingdom = $this->getPlayerKingdom($player);
+					$inArea[$player->getName()] = $this->getPlayerKingdom($player) ?? "blank";
+				}
+			}
+			foreach($inArea as $player => $kingdom) {
+				if($kingdom === $areaData["claimed"]) {
 					$power = $this->getConfig()->getNested("Power.".$kingdom, 0);
 					$this->getConfig()->setNested("Power.".$kingdom, $power + (int)$this->getConfig()->getNested("Power-Areas.Power-Per-Time", 2));
+					$this->getConfig()->save();
+				}
+			}
+			if(!empty($areaData["claimed"])) {
+				if(!isset($this->{$areaData["claimed"]."ClaimPower"})) {
+					$this->{$areaData["claimed"]."ClaimPower"} = 5;
+				}
+				foreach($inArea as $player => $kingdom) {
+					if(!in_array($areaData["claimed"], array_values($inArea))) {
+						$player = $this->getServer()->getPlayerExact($player);
+						$this->{$areaData["claimed"]."ClaimPower"}--;
+						$player->sendTip("Current ".$areaData["claimed"]." Claim Power: ".str_repeat("#", $this->{$areaData["claimed"]."ClaimPower"}));
+						if($this->{$areaData["claimed"]."ClaimPower"} <= 0) {
+							$this->getConfig()->setNested("Power-Areas.".$areaKey.".claimed", "");
+							$this->getConfig()->save();
+						}
+					}
+				}
+			}else{
+				$sameKingdom = true;
+				foreach(array_values($inArea) as $kingdomA) {
+					foreach(array_values($inArea) as $kingdomB) {
+						if($kingdomA !== $kingdomB)
+							$sameKingdom = false;
+					}
+				}
+				if(count($inArea) > 0 and $sameKingdom) {
+					$kingdom = array_values($inArea)[0];
+					$power = $this->getConfig()->getNested("Power.".$kingdom, 0);
+					$this->getConfig()->setNested("Power.".$kingdom, $power + (int)$this->getConfig()->getNested("Power-Areas.Power-Per-Time", 2));
+					$this->getConfig()->setNested("Power-Areas.".$areaKey.".claimed", $kingdom);
 					$this->getConfig()->save();
 				}
 			}
@@ -356,10 +392,8 @@ class Main extends PluginBase {
 	 * @param Player   $player
 	 * @param Form     $form
 	 * @param int      $delay Default is 1 Tick
-	 * @param int|null $timeout
 	 */
-	public static function sendPlayerDelayedForm(Player $player, Form $form, int $delay = 1, ?int $timeout = null) : void {
+	public static function sendPlayerDelayedForm(Player $player, Form $form, int $delay = 1) : void {
 		Server::getInstance()->getScheduler()->scheduleDelayedTask(new DelayedFormTask(self::$instance, $form, $player), $delay);
-
 	}
 }
